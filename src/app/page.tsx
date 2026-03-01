@@ -1,65 +1,145 @@
-import Image from "next/image";
+import Link from "next/link";
 
-export default function Home() {
+const highlights = [
+  { label: "Renewal Recovery", value: "+15% to +30%" },
+  { label: "Dues Collection", value: "Automated" },
+  { label: "Tier-2 Ready", value: "India-first UX" },
+];
+
+const featureCards = [
+  {
+    title: "Smart Renewals",
+    copy: "Expiry nudges, churn risk scoring, and one-tap retention actions on WhatsApp.",
+    tone: "f-a",
+  },
+  {
+    title: "Revenue Stack",
+    copy: "Track dues, supplements, referrals, and trainer performance in one workflow.",
+    tone: "f-b",
+  },
+  {
+    title: "Front Desk Speed",
+    copy: "Single QR check-in, member ID flow, and instant KPI updates for owners.",
+    tone: "f-c",
+  },
+];
+
+const pricing = [
+  { name: "Starter", price: "₹999/mo", points: "Up to 300 members" },
+  { name: "Growth", price: "₹1,499/mo", points: "Up to 800 members + analytics" },
+  { name: "Annual", price: "₹9,999/yr", points: "Best value with annual savings" },
+];
+
+const modules = [
+  "Members & Attendance",
+  "Renewals & Reminders",
+  "Pending Dues Recovery",
+  "QR Check-In",
+  "Growth Campaigns",
+  "Owner Expense Ledger",
+];
+
+const faqs = [
+  {
+    q: "Will this work for non-tech gym staff?",
+    a: "Yes. The product is optimized for simple daily actions and WhatsApp-first communication.",
+  },
+  {
+    q: "Can I use it in Tier-2 cities?",
+    a: "Yes. Pricing, workflow, and reminders are designed for local Indian gyms.",
+  },
+  {
+    q: "How quickly can I start?",
+    a: "You can go live in a day with member import and basic front-desk onboarding.",
+  },
+];
+
+export default function LandingPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="landing-v2" id="home">
+      <header className="landing-topbar">
+        <Link href="/" className="landing-brand">FitOps</Link>
+        <nav className="landing-nav">
+          <a href="#features">Features</a>
+          <a href="#pricing">Pricing</a>
+          <a href="#modules">Modules</a>
+          <a href="#faq">FAQ</a>
+        </nav>
+        <div className="landing-auth-actions">
+          <Link href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark">Login</Link>
+          <Link href="/signup" className="landing-v2-btn mini primary-dark">Signup</Link>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
+      </header>
+
+      <section className="landing-v2-hero">
+        <p className="landing-v2-tag">Revenue Growth System for Local Gyms</p>
+        <h1>Turn Your Gym Into a Predictable Revenue Engine</h1>
+        <p>
+          Built for Indian gyms to increase renewals, recover dues, and improve member consistency
+          without operational chaos.
+        </p>
+
+        <div className="landing-v2-actions">
+          <Link href="/login?next=%2Fdashboard" className="landing-v2-btn primary">
+            Launch Dashboard
+          </Link>
+          <a href="#pricing" className="landing-v2-btn ghost">
+            View Pricing
           </a>
         </div>
-      </main>
+
+        <div className="landing-v2-highlights">
+          {highlights.map((item) => (
+            <article key={item.label}>
+              <h3>{item.value}</h3>
+              <p>{item.label}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" className="landing-v2-features">
+        {featureCards.map((card) => (
+          <article key={card.title} className={card.tone}>
+            <h2>{card.title}</h2>
+            <p>{card.copy}</p>
+          </article>
+        ))}
+      </section>
+
+      <section id="pricing" className="landing-pricing">
+        <h2>Pricing</h2>
+        <div className="landing-pricing-grid">
+          {pricing.map((plan) => (
+            <article key={plan.name}>
+              <h3>{plan.name}</h3>
+              <p className="price">{plan.price}</p>
+              <p>{plan.points}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section id="modules" className="landing-modules">
+        <h2>Modules</h2>
+        <div className="landing-module-grid">
+          {modules.map((item) => (
+            <article key={item}>{item}</article>
+          ))}
+        </div>
+      </section>
+
+      <section id="faq" className="landing-faq">
+        <h2>FAQ</h2>
+        <div className="landing-faq-grid">
+          {faqs.map((item) => (
+            <article key={item.q}>
+              <h3>{item.q}</h3>
+              <p>{item.a}</p>
+            </article>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

@@ -1,0 +1,12 @@
+[
+  {
+    "username": "admin@gym.local",
+    "password": "admin123",
+    "role": "owner"
+  },
+  {
+    "username": "testparitosh2@gmail.com",
+    "password": "test1234",
+    "role": "owner"
+  }
+]

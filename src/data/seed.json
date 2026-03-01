@@ -1,0 +1,222 @@
+{
+  "gymName": "IronPulse Gym",
+  "plans": [
+    {
+      "id": "plan_m_1",
+      "name": "Monthly",
+      "type": "monthly",
+      "durationDays": 30,
+      "priceInr": 1499
+    },
+    {
+      "id": "plan_q_1",
+      "name": "Quarterly",
+      "type": "quarterly",
+      "durationDays": 90,
+      "priceInr": 3999
+    },
+    {
+      "id": "plan_y_1",
+      "name": "Yearly",
+      "type": "yearly",
+      "durationDays": 365,
+      "priceInr": 12999
+    }
+  ],
+  "members": [
+    {
+      "id": "member_1",
+      "memberCode": "FL-1001",
+      "name": "Rohit Verma",
+      "phone": "+919991112222",
+      "preferredLanguage": "en",
+      "assignedTrainerId": "trainer_1"
+    },
+    {
+      "id": "member_2",
+      "memberCode": "FL-1002",
+      "name": "Aditi Tiwari",
+      "phone": "+918881112233",
+      "preferredLanguage": "hi",
+      "assignedTrainerId": "trainer_2"
+    },
+    {
+      "id": "member_3",
+      "memberCode": "FL-1003",
+      "name": "Manish Yadav",
+      "phone": "+917771234567",
+      "preferredLanguage": "hi"
+    },
+    {
+      "id": "member_1772343212127_931535",
+      "memberCode": "FL-1004",
+      "name": "test",
+      "phone": "7865432324",
+      "preferredLanguage": "en",
+      "assignedTrainerId": "trainer_1"
+    },
+    {
+      "id": "member_1772347252198_f94c46",
+      "memberCode": "y",
+      "name": "n",
+      "phone": "jjei",
+      "preferredLanguage": "en",
+      "assignedTrainerId": "trainer_1"
+    }
+  ],
+  "memberships": [
+    {
+      "id": "membership_1",
+      "memberId": "member_1",
+      "planId": "plan_m_1",
+      "joinDate": "2026-02-05",
+      "expiryDate": "2026-03-06"
+    },
+    {
+      "id": "membership_2",
+      "memberId": "member_2",
+      "planId": "plan_q_1",
+      "joinDate": "2025-12-20",
+      "expiryDate": "2026-03-20"
+    },
+    {
+      "id": "membership_3",
+      "memberId": "member_3",
+      "planId": "plan_m_1",
+      "joinDate": "2026-01-18",
+      "expiryDate": "2026-02-17"
+    },
+    {
+      "id": "membership_1772343212127_2f4d59",
+      "memberId": "member_1772343212127_931535",
+      "planId": "plan_m_1",
+      "joinDate": "2026-03-01",
+      "expiryDate": "2026-03-30"
+    },
+    {
+      "id": "membership_1772347252198_8046a9",
+      "memberId": "member_1772347252198_f94c46",
+      "planId": "plan_m_1",
+      "joinDate": "2026-03-01",
+      "expiryDate": "2026-03-30"
+    }
+  ],
+  "attendanceLogs": [
+    {
+      "id": "att_1",
+      "memberId": "member_1",
+      "date": "2026-02-27"
+    },
+    {
+      "id": "att_2",
+      "memberId": "member_1",
+      "date": "2026-02-29"
+    },
+    {
+      "id": "att_3",
+      "memberId": "member_2",
+      "date": "2026-02-24"
+    },
+    {
+      "id": "att_4",
+      "memberId": "member_3",
+      "date": "2026-02-10"
+    },
+    {
+      "id": "att_1772347237482_24e7da",
+      "memberId": "member_1",
+      "date": "2026-03-01"
+    }
+  ],
+  "payments": [
+    {
+      "id": "pay_1",
+      "memberId": "member_1",
+      "amountInr": 1499,
+      "method": "upi",
+      "status": "paid",
+      "date": "2026-02-05"
+    },
+    {
+      "id": "pay_2",
+      "memberId": "member_2",
+      "amountInr": 1999,
+      "method": "cash",
+      "status": "partial",
+      "date": "2026-02-20"
+    },
+    {
+      "id": "pay_3",
+      "memberId": "member_3",
+      "amountInr": 1499,
+      "method": "cash",
+      "status": "pending",
+      "date": "2026-02-17"
+    }
+  ],
+  "trainers": [
+    {
+      "id": "trainer_1",
+      "name": "Arjun Singh"
+    },
+    {
+      "id": "trainer_2",
+      "name": "Neha Sharma"
+    }
+  ],
+  "supplementOrders": [
+    {
+      "id": "supp_1",
+      "memberId": "member_1",
+      "trainerId": "trainer_1",
+      "productName": "Whey Protein",
+      "amountInr": 2400,
+      "date": "2026-02-16"
+    },
+    {
+      "id": "supp_2",
+      "memberId": "member_2",
+      "trainerId": "trainer_2",
+      "productName": "Creatine",
+      "amountInr": 999,
+      "date": "2026-02-22"
+    }
+  ],
+  "leads": [
+    {
+      "id": "lead_1",
+      "name": "Karan Mishra",
+      "phone": "+918828282828",
+      "source": "walk_in",
+      "status": "new",
+      "createdAt": "2026-03-01"
+    }
+  ],
+  "referrals": [
+    {
+      "id": "ref_1",
+      "referrerMemberId": "member_1",
+      "referredName": "Sahil Gupta",
+      "referredPhone": "+917878787878",
+      "joined": false,
+      "rewardType": "extension_15_days",
+      "createdAt": "2026-03-01"
+    }
+  ],
+  "expenses": [
+    {
+      "id": "exp_1",
+      "category": "rent",
+      "amountInr": 25000,
+      "note": "Monthly rent",
+      "date": "2026-03-01"
+    },
+    {
+      "id": "exp_2",
+      "category": "electricity",
+      "amountInr": 4200,
+      "note": "Electricity bill",
+      "date": "2026-03-01"
+    }
+  ]
+}
