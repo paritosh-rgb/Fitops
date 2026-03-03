@@ -397,6 +397,7 @@ th {
   gap: 1rem;
   position: relative;
   isolation: isolate;
+  overflow: hidden;
 }
 
 .landing-v2::before,
@@ -425,6 +426,33 @@ th {
   bottom: 70px;
   right: 4%;
   background: rgba(255, 90, 102, 0.32);
+}
+
+.landing-motion-orb {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(18px);
+  opacity: 0.52;
+  pointer-events: none;
+  z-index: 0;
+  animation: float-orb 10s ease-in-out infinite;
+}
+
+.landing-motion-orb.orb-a {
+  width: 220px;
+  height: 220px;
+  top: 110px;
+  right: -90px;
+  background: radial-gradient(circle at 20% 20%, #6ba4ff, #3458d1);
+}
+
+.landing-motion-orb.orb-b {
+  width: 180px;
+  height: 180px;
+  bottom: 140px;
+  left: -75px;
+  animation-delay: 1.8s;
+  background: radial-gradient(circle at 30% 30%, #39d2a7, #0c8ca3);
 }
 
 .landing-topbar {
@@ -578,7 +606,7 @@ th {
   border: 0;
   border-radius: 14px;
   padding: 0.7rem 0.8rem;
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+  box-shadow: 0 10px 22px rgba(8, 29, 76, 0.2);
 }
 
 .landing-v2-highlights h3 {
@@ -624,6 +652,70 @@ th {
 
 .landing-v2-features .f-c {
   background: linear-gradient(145deg, #0f8ca3, #11c884);
+}
+
+.landing-live-board {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 0.8rem;
+}
+
+.landing-spotlight,
+.pulse-card {
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 95% 0%, rgba(124, 176, 255, 0.2), transparent 40%),
+    linear-gradient(135deg, rgba(13, 30, 67, 0.94), rgba(22, 74, 152, 0.9));
+  box-shadow: 0 14px 38px rgba(11, 35, 81, 0.26);
+}
+
+.landing-spotlight {
+  padding: 1rem;
+  color: #eaf3ff;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.landing-spotlight p {
+  margin: 0;
+  font-size: 0.75rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #cfe0ff;
+}
+
+.landing-spotlight h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.spotlight-text {
+  animation: spotlight-fade 420ms ease;
+}
+
+.landing-pulse-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
+.pulse-card {
+  padding: 0.78rem 0.82rem;
+  color: #fff;
+}
+
+.pulse-card p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: #d4e7ff;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.pulse-card strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.25rem;
 }
 
 .landing-pricing,
@@ -700,7 +792,7 @@ th {
   border-radius: 12px;
   padding: 0.65rem;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
-  box-shadow: inset 0 0 0 1px rgba(182, 210, 255, 0.14);
+  box-shadow: 0 10px 22px rgba(8, 29, 76, 0.2);
 }
 
 .roi-result-grid p {
@@ -775,7 +867,7 @@ th {
   border-radius: 14px;
   padding: 0.8rem;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
-  box-shadow: inset 0 0 0 1px rgba(184, 208, 255, 0.18);
+  box-shadow: 0 10px 22px rgba(8, 29, 76, 0.2);
 }
 
 .landing-testimonial-grid p {
@@ -818,6 +910,27 @@ th {
   box-shadow: 0 16px 30px rgba(12, 128, 69, 0.35);
 }
 
+@keyframes float-orb {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes spotlight-fade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .landing-pricing h2,
 .landing-modules h2,
 .landing-faq h2 {
@@ -843,7 +956,7 @@ th {
   padding: 0.8rem;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
   backdrop-filter: blur(5px);
-  box-shadow: inset 0 0 0 1px rgba(182, 210, 255, 0.14);
+  box-shadow: 0 10px 22px rgba(8, 29, 76, 0.2);
 }
 
 .landing-pricing-grid h3,
@@ -1893,6 +2006,10 @@ th {
   }
 
   .landing-growth-extras {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-live-board {
     grid-template-columns: 1fr;
   }
 
