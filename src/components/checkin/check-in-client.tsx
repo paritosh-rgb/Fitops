@@ -349,7 +349,9 @@ export default function CheckInClient({
         : `${memberName} (${memberCode}) checked in successfully for ${payload.date}.`;
 
       setMessage(text);
-      await loadStatus(false);
+      if (!memberMode) {
+        setStatusData(null);
+      }
       showToast(text, "success");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to check in";
@@ -406,7 +408,7 @@ export default function CheckInClient({
         </form>
       ) : null}
 
-      {statusData ? (
+      {memberMode && statusData ? (
         <section className="member-status-panel">
           <div className="member-status-head">
             <div>
