@@ -1,10 +1,20 @@
 export function getCheckinToken(): string {
-  return (process.env.APP_CHECKIN_TOKEN ?? "gym-qr-checkin").trim();
+  return (process.env.APP_CHECKIN_TOKEN ?? "fitops-checkin-2026").trim();
+}
+
+function acceptedTokens(): string[] {
+  const primary = getCheckinToken();
+  const legacyFromEnv = (process.env.APP_CHECKIN_LEGACY_TOKENS ?? "")
+    .split(",")
+    .map((row) => row.trim())
+    .filter(Boolean);
+  const builtInLegacy = ["gym-qr-checkin", "fitops-checkin-2026"];
+  return Array.from(new Set([primary, ...legacyFromEnv, ...builtInLegacy]));
 }
 
 export function isValidCheckinToken(token?: string): boolean {
   if (!token) return false;
-  return token === getCheckinToken();
+  return acceptedTokens().includes(token.trim());
 }
 
 export function getAppBaseUrl(): string {
