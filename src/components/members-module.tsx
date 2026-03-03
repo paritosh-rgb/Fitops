@@ -5,6 +5,7 @@ import { AttendanceLog, Member, Membership, Plan, Trainer } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 
 interface MembersModuleProps {
+  gymName: string;
   members: Member[];
   memberships: Membership[];
   attendanceLogs: AttendanceLog[];
@@ -34,6 +35,7 @@ async function sendJson(url: string, body: Record<string, unknown>, method = "PO
 }
 
 export default function MembersModule({
+  gymName,
   members,
   memberships,
   attendanceLogs,
@@ -44,7 +46,12 @@ export default function MembersModule({
   const effectivePlans = plans.length > 0 ? plans : FALLBACK_PLANS;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [createdPortal, setCreatedPortal] = useState<{ memberCode: string; password: string } | null>(null);
+  const [createdPortal, setCreatedPortal] = useState<{
+    memberCode: string;
+    password: string;
+    phone: string;
+    name: string;
+  } | null>(null);
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().slice(0, 10));
 
   const [newMember, setNewMember] = useState({
@@ -122,7 +129,12 @@ export default function MembersModule({
       const payload = await sendJson("/api/members", newMember);
       const memberCode = String(payload.memberCode ?? newMember.memberCode).trim();
       const portalPassword = String(payload.portalPassword ?? "fitops@123");
-      setCreatedPortal({ memberCode, password: portalPassword });
+      setCreatedPortal({
+        memberCode,
+        password: portalPassword,
+        phone: newMember.phone.trim(),
+        name: newMember.name.trim(),
+      });
       showToast(`Member created. Default portal password: ${portalPassword}`, "success");
       setTimeout(() => {
         window.location.reload();
@@ -133,6 +145,24 @@ export default function MembersModule({
       setError(message);
       showToast(message, "error");
     }
+  }
+
+  function sharePortalCredentials() {
+    if (!createdPortal) return;
+    const digits = createdPortal.phone.replace(/\D/g, "");
+    const phoneNumber = digits.length === 10 ? `91${digits}` : digits;
+    const text = [
+      `Hi ${createdPortal.name}, welcome to ${gymName}.`,
+      `Your Member Portal credentials:`,
+      `Member ID: ${createdPortal.memberCode}`,
+      `Password: ${createdPortal.password}`,
+      `Login here: ${window.location.origin}/member/login`,
+    ].join("\n");
+    const url = phoneNumber
+      ? `https://wa.me/${phoneNumber}?text=${encodeURIComponent(text)}`
+      : `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+    showToast("Opened WhatsApp with member credentials", "success");
   }
 
   function startEdit(memberId: string) {
@@ -222,6 +252,9 @@ export default function MembersModule({
             <strong>Member Portal Credentials</strong>
             <p>Member ID: {createdPortal.memberCode}</p>
             <p>Default Password: {createdPortal.password}</p>
+            <button type="button" className="mini-btn" onClick={sharePortalCredentials}>
+              Share Credentials on WhatsApp
+            </button>
           </div>
         ) : (
           <p className="muted small">Default Member Portal password: fitops@123</p>

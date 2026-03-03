@@ -18,6 +18,7 @@ export default async function MembersPage() {
       subtitle="Onboard members, log payments, mark attendance and renew plans."
     >
       <MembersModule
+        gymName={store.gymName}
         members={store.members}
         memberships={store.memberships}
         attendanceLogs={store.attendanceLogs}
