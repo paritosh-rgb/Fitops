@@ -1,4 +1,5 @@
 import Link from "next/link";
+import LandingGrowthExtras from "@/components/landing/landing-growth-extras";
 
 const highlights = [
   { label: "Renewal Recovery", value: "+15% to +30%" },
@@ -55,13 +56,39 @@ const faqs = [
   },
 ];
 
+const testimonials = [
+  {
+    name: "Arjun Singh",
+    gym: "BodyFit, Lucknow",
+    quote: "Renewals became predictable. We recovered members who had stopped visiting for weeks.",
+    metric: "+27% renewal recovery",
+  },
+  {
+    name: "Megha Verma",
+    gym: "Iron Temple, Kanpur",
+    quote: "Front desk follow-ups are finally structured. Dues collection improved every month.",
+    metric: "Rs 48,000 dues recovered",
+  },
+  {
+    name: "Nitin Yadav",
+    gym: "Pulse Gym, Varanasi",
+    quote: "Member portal reduced chaos. Trainers focus more on coaching and less on manual tracking.",
+    metric: "2.3 hrs/day operational time saved",
+  },
+];
+
 export default function LandingPage() {
+  const whatsappText = encodeURIComponent(
+    "Hi FitOps team, I want a 15-minute demo for my gym.",
+  );
+
   return (
     <div className="landing-v2" id="home">
       <header className="landing-topbar">
         <Link href="/" className="landing-brand">FitOps</Link>
         <nav className="landing-nav">
           <a href="#features">Features</a>
+          <a href="#roi">ROI</a>
           <a href="#pricing">Pricing</a>
           <a href="#modules">Modules</a>
           <a href="#faq">FAQ</a>
@@ -108,6 +135,22 @@ export default function LandingPage() {
         ))}
       </section>
 
+      <LandingGrowthExtras />
+
+      <section className="landing-testimonials" id="proof">
+        <h2>What Gym Owners Say</h2>
+        <div className="landing-testimonial-grid">
+          {testimonials.map((item) => (
+            <article key={item.name}>
+              <p>&ldquo;{item.quote}&rdquo;</p>
+              <h3>{item.name}</h3>
+              <small>{item.gym}</small>
+              <span>{item.metric}</span>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section id="pricing" className="landing-pricing">
         <h2>Pricing</h2>
         <div className="landing-pricing-grid">
@@ -141,6 +184,15 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
+
+      <a
+        className="landing-sticky-whatsapp"
+        href={`https://wa.me/?text=${whatsappText}`}
+        target="_blank"
+        rel="noreferrer"
+      >
+        WhatsApp Demo
+      </a>
     </div>
   );
 }

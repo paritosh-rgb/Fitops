@@ -628,6 +628,185 @@ th {
   box-shadow: 0 16px 40px rgba(11, 35, 81, 0.3);
 }
 
+.landing-growth-extras {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.8rem;
+}
+
+.landing-roi-card,
+.landing-demo-card,
+.landing-testimonials {
+  background:
+    radial-gradient(circle at 95% 0%, rgba(118, 173, 255, 0.22), transparent 40%),
+    linear-gradient(135deg, rgba(12, 35, 84, 0.96), rgba(20, 80, 160, 0.92));
+  border-radius: 18px;
+  padding: 1rem;
+  color: #e8f1ff;
+  box-shadow: 0 16px 40px rgba(11, 35, 81, 0.3);
+}
+
+.landing-roi-card h2,
+.landing-demo-card h2,
+.landing-testimonials h2 {
+  margin: 0;
+  color: #fff;
+}
+
+.landing-roi-card p,
+.landing-demo-card p {
+  margin: 0.4rem 0 0;
+  color: #dce8ff;
+}
+
+.roi-input-grid {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.roi-input-grid label {
+  font-size: 0.86rem;
+  color: #dce8ff;
+  display: grid;
+  gap: 0.3rem;
+}
+
+.roi-input-grid input {
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(184, 208, 255, 0.3);
+  color: #fff;
+}
+
+.roi-result-grid {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: 1fr 1fr;
+}
+
+.roi-result-grid article {
+  border-radius: 12px;
+  padding: 0.65rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.13), rgba(255, 255, 255, 0.05));
+  box-shadow: inset 0 0 0 1px rgba(182, 210, 255, 0.14);
+}
+
+.roi-result-grid p {
+  margin: 0;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #d7e6ff;
+}
+
+.roi-result-grid strong {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 1.1rem;
+  color: #fff4b8;
+}
+
+.demo-strip {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.55rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.demo-step {
+  border-radius: 12px;
+  padding: 0.65rem;
+  display: grid;
+  gap: 0.35rem;
+  color: #fff;
+}
+
+.demo-step span {
+  width: 1.45rem;
+  height: 1.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-weight: 800;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+.demo-step h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.demo-step p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(240, 248, 255, 0.94);
+}
+
+.demo-step.d1 { background: linear-gradient(145deg, #3968ff, #6a4cff); }
+.demo-step.d2 { background: linear-gradient(145deg, #ff7a39, #ff4f71); }
+.demo-step.d3 { background: linear-gradient(145deg, #0e98b3, #16c677); }
+.demo-step.d4 { background: linear-gradient(145deg, #8a5bff, #3f89ff); }
+
+.landing-testimonials {
+  margin-top: 0.8rem;
+}
+
+.landing-testimonial-grid {
+  margin-top: 0.8rem;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+}
+
+.landing-testimonial-grid article {
+  border-radius: 14px;
+  padding: 0.8rem;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.05));
+  box-shadow: inset 0 0 0 1px rgba(184, 208, 255, 0.18);
+}
+
+.landing-testimonial-grid p {
+  margin: 0;
+  color: #e8f2ff;
+  font-size: 0.88rem;
+}
+
+.landing-testimonial-grid h3 {
+  margin: 0.65rem 0 0;
+  font-size: 0.95rem;
+  color: #fff;
+}
+
+.landing-testimonial-grid small {
+  display: block;
+  margin-top: 0.15rem;
+  color: #cfe1ff;
+}
+
+.landing-testimonial-grid span {
+  display: inline-block;
+  margin-top: 0.55rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #ffeaa2;
+}
+
+.landing-sticky-whatsapp {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 1200;
+  border-radius: 999px;
+  padding: 0.7rem 0.95rem;
+  font-weight: 800;
+  color: #fff;
+  text-decoration: none;
+  background: linear-gradient(135deg, #0fbe65, #20d56f);
+  box-shadow: 0 16px 30px rgba(12, 128, 69, 0.35);
+}
+
 .landing-pricing h2,
 .landing-modules h2,
 .landing-faq h2 {
@@ -1700,6 +1879,15 @@ th {
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
+  }
+
+  .landing-growth-extras {
+    grid-template-columns: 1fr;
+  }
+
+  .demo-strip,
+  .roi-result-grid {
+    grid-template-columns: 1fr;
   }
 
   .inline-fields {
