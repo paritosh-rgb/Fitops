@@ -10,6 +10,7 @@ interface CheckInClientProps {
 }
 
 type RewardTarget = 7 | 15 | 30;
+type FitnessModule = "today" | "diet" | "twin" | "rewards" | "battles";
 
 function todayWeekdayName(): string {
   const day = new Date().getDay();
@@ -120,6 +121,7 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
   const [statusData, setStatusData] = useState<MemberStatus | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<"renewals" | "workout">("workout");
+  const [activeFitnessModule, setActiveFitnessModule] = useState<FitnessModule>("today");
   const [selectedDietDay, setSelectedDietDay] = useState(todayWeekdayName());
   const [battleOpponentCode, setBattleOpponentCode] = useState("");
 
@@ -295,6 +297,10 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
   function switchModule(moduleId: "renewals" | "workout") {
     setActiveModule(moduleId);
     setMenuOpen(false);
+  }
+
+  function switchFitnessModule(moduleId: FitnessModule) {
+    setActiveFitnessModule(moduleId);
   }
 
   async function checkIn(event: FormEvent<HTMLFormElement>) {
@@ -474,217 +480,293 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
               <article id="workout-module" className="member-feature-card workout-feature">
                 <div className="section-head">
                   <h3>Workout Plan Module</h3>
-                  <span className="status-pill low">{statusData.workout.today.completionPct}% done</span>
+                  <span className="status-pill low">{activeFitnessModule.toUpperCase()}</span>
                 </div>
-                <p className="module-caption">Daily training tasks, diet targets and reward progress.</p>
-                <div className="twin-avatar-card">
-                  <h4>Gym Twin Avatar</h4>
-                  <div className="twin-avatar-meta">
-                    <span className="twin-aura" style={{ background: statusData.twin.auraColor }} />
-                    <div>
-                      <strong>{statusData.twin.avatarLabel}</strong>
-                      <p className="muted">
-                        Level: {statusData.twin.level} | Weekly Score: {statusData.twin.weeklyScore}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <p className="muted">
-                  {statusData.workout.today.day}: {statusData.workout.today.focus} | Trainer:{" "}
-                  {statusData.trainerName ?? "Unassigned"}
-                </p>
-                <div className="exercise-list">
-                  {statusData.workout.today.exercises.map((exercise) => (
-                    <button
-                      key={exercise.name}
-                      type="button"
-                      className={`exercise-btn ${exercise.completed ? "done" : ""}`}
-                      disabled={busy || actionBusy}
-                      onClick={() => toggleExercise(exercise.name)}
-                    >
-                      {exercise.completed ? "✓" : "○"} {exercise.name}
-                    </button>
-                  ))}
-                </div>
-                <p className="member-reco">{statusData.workout.today.trainerNote}</p>
-                <div className="split-chip-row">
-                  {statusData.workout.weeklySplit.map((split) => (
-                    <span key={split.day} className="split-chip">
-                      {split.day.slice(0, 3)}: {split.focus}
-                    </span>
-                  ))}
-                </div>
-
-                <h4>Diet Plan</h4>
-                <div className="diet-day-switch">
-                  <p className="muted">Preview day</p>
-                  <select
-                    value={selectedDietDay}
-                    onChange={(e) => setSelectedDietDay(e.target.value)}
-                  >
-                    {statusData.diet.weeklyPlan.map((day) => (
-                      <option key={day.day} value={day.day}>
-                        {day.day}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="diet-kpi-row">
-                  <span>Calories: {statusData.diet.calorieTarget}</span>
-                  <span>Protein: {statusData.diet.proteinTargetG}g</span>
-                  <span>Water: {statusData.diet.todayWaterGlasses}/{statusData.diet.waterTargetGlasses}</span>
-                </div>
-                <div className="split-chip-row">
-                  {statusData.diet.weeklyPlan.map((day) => (
-                    <span
-                      key={day.day}
-                      className={`split-chip ${day.day === selectedDietDay ? "active-day-chip" : ""}`}
-                    >
-                      {day.day.slice(0, 3)}: {day.mealCount} meals
-                    </span>
-                  ))}
-                </div>
-                <div className="water-actions">
+                <p className="module-caption">Clean sections for workout, diet, twin, rewards and battles.</p>
+                <div className="fitness-switch-pills">
                   <button
                     type="button"
-                    className="mini-btn"
-                    disabled={busy || actionBusy}
-                    onClick={() => setWater(Math.max(0, statusData.diet.todayWaterGlasses - 1))}
+                    className={`module-pill ${activeFitnessModule === "today" ? "active" : ""}`}
+                    onClick={() => switchFitnessModule("today")}
                   >
-                    -1 Glass
+                    Today
                   </button>
                   <button
                     type="button"
-                    className="mini-btn"
-                    disabled={busy || actionBusy}
-                    onClick={() =>
-                      setWater(
-                        Math.min(statusData.diet.waterTargetGlasses, statusData.diet.todayWaterGlasses + 1),
-                      )
-                    }
+                    className={`module-pill ${activeFitnessModule === "diet" ? "active" : ""}`}
+                    onClick={() => switchFitnessModule("diet")}
                   >
-                    +1 Glass
+                    Diet
                   </button>
-                </div>
-                <div className="meal-list">
-                  {selectedDietPlan(statusData).meals.map((meal) => (
-                    <div key={meal.title} className="meal-item">
-                      <h4>{meal.title}</h4>
-                      <p>{meal.items.join(" | ")}</p>
-                    </div>
-                  ))}
-                </div>
-                <div className="diet-actions">
-                  <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">
-                    Download PDF
-                  </a>
-                  <button type="button" className="mini-btn secondary-btn" onClick={shareDietPlan}>
-                    Share Plan
+                  <button
+                    type="button"
+                    className={`module-pill ${activeFitnessModule === "twin" ? "active" : ""}`}
+                    onClick={() => switchFitnessModule("twin")}
+                  >
+                    Twin
+                  </button>
+                  <button
+                    type="button"
+                    className={`module-pill ${activeFitnessModule === "rewards" ? "active" : ""}`}
+                    onClick={() => switchFitnessModule("rewards")}
+                  >
+                    Rewards
+                  </button>
+                  <button
+                    type="button"
+                    className={`module-pill ${activeFitnessModule === "battles" ? "active" : ""}`}
+                    onClick={() => switchFitnessModule("battles")}
+                  >
+                    Battles
                   </button>
                 </div>
 
-                <h4>Streak Rewards</h4>
-                <p className="muted">Current streak: {statusData.rewards.currentStreak} days</p>
-                <div className="streak-track">
-                  <div
-                    className="streak-fill"
-                    style={{ width: `${Math.min(100, Math.round((statusData.rewards.currentStreak / 30) * 100))}%` }}
-                  />
-                </div>
-                <div className="reward-list">
-                  {statusData.rewards.milestones.map((milestone) => (
-                    <div key={milestone.target} className="reward-item">
-                      <div>
-                        <strong>{milestone.target}-day reward</strong>
-                        <p>{milestone.rewardLabel}</p>
-                      </div>
-                      {milestone.claimed ? (
-                        <span className="status-pill paid">Claimed</span>
-                      ) : (
+                {activeFitnessModule === "today" ? (
+                  <section className="fitness-module-panel">
+                    <p className="muted">
+                      {statusData.workout.today.day}: {statusData.workout.today.focus} | Trainer:{" "}
+                      {statusData.trainerName ?? "Unassigned"}
+                    </p>
+                    <span className="status-pill low">{statusData.workout.today.completionPct}% completed</span>
+                    <div className="exercise-list">
+                      {statusData.workout.today.exercises.map((exercise) => (
                         <button
+                          key={exercise.name}
                           type="button"
-                          className="mini-btn"
-                          disabled={busy || actionBusy || !milestone.unlocked}
-                          onClick={() => claimReward(milestone.target)}
+                          className={`exercise-btn ${exercise.completed ? "done" : ""}`}
+                          disabled={busy || actionBusy}
+                          onClick={() => toggleExercise(exercise.name)}
                         >
-                          {milestone.unlocked ? "Claim" : "Locked"}
+                          {exercise.completed ? "✓" : "○"} {exercise.name}
                         </button>
-                      )}
+                      ))}
                     </div>
-                  ))}
-                </div>
+                    <p className="member-reco">{statusData.workout.today.trainerNote}</p>
+                    <div className="split-chip-row">
+                      {statusData.workout.weeklySplit.map((split) => (
+                        <span key={split.day} className="split-chip">
+                          {split.day.slice(0, 3)}: {split.focus}
+                        </span>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
 
-                <h4>Sweat Credits Economy</h4>
-                <p className="muted">Balance: {statusData.sweatCredits.balance} credits</p>
-                <div className="reward-list">
-                  {statusData.sweatCredits.redemptions.map((redemption) => (
-                    <div key={redemption.code} className="reward-item">
-                      <div>
-                        <strong>{redemption.label}</strong>
-                        <p>Cost: {redemption.points} credits</p>
-                      </div>
+                {activeFitnessModule === "diet" ? (
+                  <section className="fitness-module-panel">
+                    <div className="diet-day-switch">
+                      <p className="muted">Preview day</p>
+                      <select value={selectedDietDay} onChange={(e) => setSelectedDietDay(e.target.value)}>
+                        {statusData.diet.weeklyPlan.map((day) => (
+                          <option key={day.day} value={day.day}>
+                            {day.day}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="diet-kpi-row">
+                      <span>Calories: {statusData.diet.calorieTarget}</span>
+                      <span>Protein: {statusData.diet.proteinTargetG}g</span>
+                      <span>
+                        Water: {statusData.diet.todayWaterGlasses}/{statusData.diet.waterTargetGlasses}
+                      </span>
+                    </div>
+                    <div className="split-chip-row">
+                      {statusData.diet.weeklyPlan.map((day) => (
+                        <span
+                          key={day.day}
+                          className={`split-chip ${day.day === selectedDietDay ? "active-day-chip" : ""}`}
+                        >
+                          {day.day.slice(0, 3)}: {day.mealCount} meals
+                        </span>
+                      ))}
+                    </div>
+                    <div className="water-actions">
                       <button
                         type="button"
                         className="mini-btn"
-                        disabled={busy || actionBusy || statusData.sweatCredits.balance < redemption.points}
-                        onClick={() => redeemCredits(redemption.code)}
+                        disabled={busy || actionBusy}
+                        onClick={() => setWater(Math.max(0, statusData.diet.todayWaterGlasses - 1))}
                       >
-                        Redeem
+                        -1 Glass
+                      </button>
+                      <button
+                        type="button"
+                        className="mini-btn"
+                        disabled={busy || actionBusy}
+                        onClick={() =>
+                          setWater(
+                            Math.min(statusData.diet.waterTargetGlasses, statusData.diet.todayWaterGlasses + 1),
+                          )
+                        }
+                      >
+                        +1 Glass
                       </button>
                     </div>
-                  ))}
-                </div>
+                    <div className="meal-list">
+                      {selectedDietPlan(statusData).meals.map((meal) => (
+                        <div key={meal.title} className="meal-item">
+                          <h4>{meal.title}</h4>
+                          <p>{meal.items.join(" | ")}</p>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="diet-actions">
+                      <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">
+                        Download PDF
+                      </a>
+                      <button type="button" className="mini-btn secondary-btn" onClick={shareDietPlan}>
+                        Share Plan
+                      </button>
+                    </div>
+                  </section>
+                ) : null}
 
-                <h4>Streak Battles</h4>
-                <div className="battle-create-row">
-                  <input
-                    placeholder="Friend member ID (e.g. FL-1002)"
-                    value={battleOpponentCode}
-                    onChange={(e) => setBattleOpponentCode(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="mini-btn"
-                    disabled={busy || actionBusy || !battleOpponentCode.trim()}
-                    onClick={createBattle}
-                  >
-                    Challenge
-                  </button>
-                </div>
-                <div className="reward-list">
-                  {statusData.streakBattles.active.length === 0 ? (
-                    <p className="muted">No active battle yet.</p>
-                  ) : (
-                    statusData.streakBattles.active.map((battle) => (
-                      <div key={battle.id} className="reward-item">
+                {activeFitnessModule === "twin" ? (
+                  <section className="fitness-module-panel">
+                    <div className="twin-avatar-card">
+                      <h4>Gym Twin Avatar</h4>
+                      <div className="twin-avatar-meta">
+                        <span className="twin-aura" style={{ background: statusData.twin.auraColor }} />
                         <div>
-                          <strong>vs {battle.opponentName}</strong>
-                          <p>
-                            {battle.startDate} to {battle.endDate}
+                          <strong>{statusData.twin.avatarLabel}</strong>
+                          <p className="muted">
+                            Level: {statusData.twin.level} | Weekly Score: {statusData.twin.weeklyScore}
                           </p>
                         </div>
-                        <span className="status-pill medium">
-                          {battle.myScore} : {battle.opponentScore}
-                        </span>
                       </div>
-                    ))
-                  )}
-                </div>
-
-                <h4>Gym TV Leaderboard</h4>
-                <div className="reward-list">
-                  {statusData.streakBattles.leaderboard.slice(0, 5).map((row, index) => (
-                    <div key={row.memberId} className="reward-item">
-                      <div>
-                        <strong>
-                          #{index + 1} {row.name}
-                        </strong>
-                        <p>{row.memberCode}</p>
-                      </div>
-                      <span className="status-pill paid">{row.score}</span>
                     </div>
-                  ))}
-                </div>
+                    <div className="member-kpi-grid">
+                      <article>
+                        <p>Streak</p>
+                        <strong>{statusData.attendance.streakDays} days</strong>
+                      </article>
+                      <article>
+                        <p>Visits (30d)</p>
+                        <strong>{statusData.attendance.visitsLast30Days}</strong>
+                      </article>
+                      <article>
+                        <p>Workout</p>
+                        <strong>{statusData.workout.today.completionPct}% done</strong>
+                      </article>
+                    </div>
+                    <p className="member-reco">
+                      Your Twin evolves with consistency. Mark workouts and follow the diet daily.
+                    </p>
+                  </section>
+                ) : null}
+
+                {activeFitnessModule === "rewards" ? (
+                  <section className="fitness-module-panel">
+                    <h4>Streak Rewards</h4>
+                    <p className="muted">Current streak: {statusData.rewards.currentStreak} days</p>
+                    <div className="streak-track">
+                      <div
+                        className="streak-fill"
+                        style={{
+                          width: `${Math.min(100, Math.round((statusData.rewards.currentStreak / 30) * 100))}%`,
+                        }}
+                      />
+                    </div>
+                    <div className="reward-list">
+                      {statusData.rewards.milestones.map((milestone) => (
+                        <div key={milestone.target} className="reward-item">
+                          <div>
+                            <strong>{milestone.target}-day reward</strong>
+                            <p>{milestone.rewardLabel}</p>
+                          </div>
+                          {milestone.claimed ? (
+                            <span className="status-pill paid">Claimed</span>
+                          ) : (
+                            <button
+                              type="button"
+                              className="mini-btn"
+                              disabled={busy || actionBusy || !milestone.unlocked}
+                              onClick={() => claimReward(milestone.target)}
+                            >
+                              {milestone.unlocked ? "Claim" : "Locked"}
+                            </button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                    <h4>Sweat Credits Economy</h4>
+                    <p className="muted">Balance: {statusData.sweatCredits.balance} credits</p>
+                    <div className="reward-list">
+                      {statusData.sweatCredits.redemptions.map((redemption) => (
+                        <div key={redemption.code} className="reward-item">
+                          <div>
+                            <strong>{redemption.label}</strong>
+                            <p>Cost: {redemption.points} credits</p>
+                          </div>
+                          <button
+                            type="button"
+                            className="mini-btn"
+                            disabled={busy || actionBusy || statusData.sweatCredits.balance < redemption.points}
+                            onClick={() => redeemCredits(redemption.code)}
+                          >
+                            Redeem
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
+
+                {activeFitnessModule === "battles" ? (
+                  <section className="fitness-module-panel">
+                    <h4>Streak Battles</h4>
+                    <div className="battle-create-row">
+                      <input
+                        placeholder="Friend member ID (e.g. FL-1002)"
+                        value={battleOpponentCode}
+                        onChange={(e) => setBattleOpponentCode(e.target.value)}
+                      />
+                      <button
+                        type="button"
+                        className="mini-btn"
+                        disabled={busy || actionBusy || !battleOpponentCode.trim()}
+                        onClick={createBattle}
+                      >
+                        Challenge
+                      </button>
+                    </div>
+                    <div className="reward-list">
+                      {statusData.streakBattles.active.length === 0 ? (
+                        <p className="muted">No active battle yet.</p>
+                      ) : (
+                        statusData.streakBattles.active.map((battle) => (
+                          <div key={battle.id} className="reward-item">
+                            <div>
+                              <strong>vs {battle.opponentName}</strong>
+                              <p>
+                                {battle.startDate} to {battle.endDate}
+                              </p>
+                            </div>
+                            <span className="status-pill medium">
+                              {battle.myScore} : {battle.opponentScore}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <h4>Gym TV Leaderboard</h4>
+                    <div className="reward-list">
+                      {statusData.streakBattles.leaderboard.slice(0, 5).map((row, index) => (
+                        <div key={row.memberId} className="reward-item">
+                          <div>
+                            <strong>
+                              #{index + 1} {row.name}
+                            </strong>
+                            <p>{row.memberCode}</p>
+                          </div>
+                          <span className="status-pill paid">{row.score}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </section>
+                ) : null}
               </article>
             ) : null}
           </div>
