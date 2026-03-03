@@ -8,7 +8,19 @@ export function isValidCheckinToken(token?: string): boolean {
 }
 
 export function getAppBaseUrl(): string {
-  return (process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000").trim();
+  const explicit = (process.env.NEXT_PUBLIC_APP_URL ?? "").trim();
+  if (explicit) return explicit;
+
+  const vercelUrl = (process.env.VERCEL_URL ?? "").trim();
+  if (vercelUrl) {
+    return `https://${vercelUrl.replace(/^https?:\/\//, "")}`;
+  }
+
+  if (typeof window !== "undefined" && window.location?.origin) {
+    return window.location.origin;
+  }
+
+  return "http://localhost:3000";
 }
 
 export function buildSharedCheckinUrl(gymId: string): string {
