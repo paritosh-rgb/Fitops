@@ -3,9 +3,11 @@ import MembershipReminderPanel from "@/components/renewals/membership-reminder-p
 import MissYouPanel from "@/components/renewals/miss-you-panel";
 import AppShell from "@/components/ui/app-shell";
 import { buildDashboard } from "@/lib/analytics";
-import { getServerSessionRole } from "@/lib/auth/server-session";
+import { getServerSession } from "@/lib/auth/server-session";
 import { buildDueReminders } from "@/lib/reminders/dues";
 import { readStore } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 function reminderBucket(daysToExpiry: number): string {
   if (daysToExpiry === 7) return "7-day reminder";
@@ -25,7 +27,7 @@ function urgencyClass(daysToExpiry: number): string {
 
 export default async function RenewalsPage() {
   const store = await readStore();
-  const role = await getServerSessionRole();
+  const session = await getServerSession();
   const dashboard = buildDashboard(store);
   const today = new Date();
   const dueReminders = buildDueReminders(store);
@@ -50,7 +52,8 @@ export default async function RenewalsPage() {
   return (
     <AppShell
       gymName={store.gymName}
-      role={role}
+      gymId={session.gymId}
+      role={session.role}
       title="Renewals"
       subtitle="Prioritize expiring members and run retention follow-ups systematically."
     >

@@ -1,14 +1,13 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
 
 export default function SignupForm() {
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [username, setUsername] = useState("");
+  const [gymId, setGymId] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [role, setRole] = useState("owner");
@@ -19,13 +18,23 @@ export default function SignupForm() {
     event.preventDefault();
 
     try {
+      if (!username.trim() || !gymId.trim() || !password.trim() || !confirmPassword.trim()) {
+        throw new Error("Please fill all required fields");
+      }
+
       setLoading(true);
       setError(null);
 
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password, confirmPassword, role }),
+        body: JSON.stringify({
+          username: username.trim(),
+          gymId: gymId.trim(),
+          password,
+          confirmPassword,
+          role,
+        }),
       });
 
       const payload = (await response.json().catch(() => ({}))) as { error?: string };
@@ -34,8 +43,7 @@ export default function SignupForm() {
       }
 
       showToast("Signup successful. Please login.", "success");
-      router.push("/login?next=%2Fdashboard");
-      router.refresh();
+      window.location.assign("/login?next=%2Fdashboard");
     } catch (err) {
       const message = err instanceof Error ? err.message : "Signup failed";
       setError(message);
@@ -53,10 +61,18 @@ export default function SignupForm() {
       <label>
         Username
         <input
-          required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="owner@fitlife.com"
+        />
+      </label>
+
+      <label>
+        Gym ID
+        <input
+          value={gymId}
+          onChange={(e) => setGymId(e.target.value)}
+          placeholder="fitlife-lucknow"
         />
       </label>
 
@@ -72,7 +88,6 @@ export default function SignupForm() {
       <label>
         Password
         <input
-          required
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
@@ -83,7 +98,6 @@ export default function SignupForm() {
       <label>
         Confirm Password
         <input
-          required
           type="password"
           value={confirmPassword}
           onChange={(e) => setConfirmPassword(e.target.value)}

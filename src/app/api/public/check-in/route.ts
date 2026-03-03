@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidCheckinToken } from "@/lib/checkin/qr";
 import { makeId, readStore, writeStore } from "@/lib/store";
+import { normalizeGymId } from "@/lib/tenant";
 
 export async function POST(request: NextRequest) {
-  const body = (await request.json()) as { memberId?: string; token?: string };
+  const body = (await request.json()) as { memberId?: string; token?: string; gymId?: string };
 
-  if (!body.memberId || !body.token) {
-    return NextResponse.json({ error: "memberId and token are required" }, { status: 400 });
+  if (!body.memberId || !body.token || !body.gymId) {
+    return NextResponse.json({ error: "memberId, token and gymId are required" }, { status: 400 });
   }
 
   if (!isValidCheckinToken(body.token)) {
@@ -14,7 +15,8 @@ export async function POST(request: NextRequest) {
   }
 
   const normalizedCode = body.memberId.trim().toLowerCase();
-  const store = await readStore();
+  const gymId = normalizeGymId(body.gymId);
+  const store = await readStore(gymId);
   const member = store.members.find((row) => row.memberCode.toLowerCase() === normalizedCode);
   if (!member) {
     return NextResponse.json({ error: "Member not found" }, { status: 404 });
@@ -31,7 +33,7 @@ export async function POST(request: NextRequest) {
       memberId: member.id,
       date: today,
     });
-    await writeStore(store);
+    await writeStore(store, gymId);
   }
 
   return NextResponse.json({

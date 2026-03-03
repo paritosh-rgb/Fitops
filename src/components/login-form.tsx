@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
 
 interface LoginFormProps {
@@ -9,7 +8,6 @@ interface LoginFormProps {
 }
 
 export default function LoginForm({ nextPath }: LoginFormProps) {
-  const router = useRouter();
   const { showToast } = useToast();
 
   const [username, setUsername] = useState("");
@@ -20,13 +18,17 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     try {
+      if (!username.trim() || !password.trim()) {
+        throw new Error("Please enter username and password");
+      }
+
       setLoading(true);
       setError(null);
 
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, password }),
+        body: JSON.stringify({ username: username.trim(), password }),
       });
 
       if (!response.ok) {
@@ -35,8 +37,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       }
 
       showToast("Login successful", "success");
-      router.push(nextPath);
-      router.refresh();
+      window.location.assign(nextPath);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setLoading(false);
@@ -54,7 +55,6 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       <label>
         Username
         <input
-          required
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="admin@gym.local"
@@ -64,7 +64,6 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
       <label>
         Password
         <input
-          required
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}

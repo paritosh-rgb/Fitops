@@ -2,15 +2,16 @@ import CheckInClient from "@/components/checkin/check-in-client";
 import { isValidCheckinToken } from "@/lib/checkin/qr";
 
 interface CheckInPageProps {
-  searchParams: Promise<{ memberId?: string; token?: string }>;
+  searchParams: Promise<{ memberId?: string; token?: string; gym?: string }>;
 }
 
 export default async function PublicCheckInPage({ searchParams }: CheckInPageProps) {
   const params = await searchParams;
   const memberId = params.memberId;
   const token = params.token;
+  const gymId = params.gym;
 
-  if (!token || !isValidCheckinToken(token)) {
+  if (!token || !gymId || !isValidCheckinToken(token)) {
     return (
       <div className="checkin-root">
         <div className="checkin-card">
@@ -23,7 +24,7 @@ export default async function PublicCheckInPage({ searchParams }: CheckInPagePro
 
   return (
     <div className="checkin-root">
-      <CheckInClient token={token} initialMemberId={memberId} />
+      <CheckInClient token={token} gymId={gymId} initialMemberId={memberId} />
     </div>
   );
 }

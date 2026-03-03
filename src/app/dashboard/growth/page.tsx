@@ -1,12 +1,14 @@
 import GrowthModule from "@/components/growth/growth-module";
 import AppShell from "@/components/ui/app-shell";
 import { buildDashboard } from "@/lib/analytics";
-import { getServerSessionRole } from "@/lib/auth/server-session";
+import { getServerSession } from "@/lib/auth/server-session";
 import { readStore } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export default async function GrowthPage() {
   const store = await readStore();
-  const role = await getServerSessionRole();
+  const session = await getServerSession();
   const dashboard = buildDashboard(store);
   const expiredMembers = dashboard.renewalPipeline
     .filter((row) => row.daysToExpiry < 0)
@@ -15,7 +17,8 @@ export default async function GrowthPage() {
   return (
     <AppShell
       gymName={store.gymName}
-      role={role}
+      gymId={session.gymId}
+      role={session.role}
       title="Growth"
       subtitle="Run lead conversions, referrals, and festival comeback campaigns."
     >
@@ -23,6 +26,7 @@ export default async function GrowthPage() {
         leads={store.leads}
         referrals={store.referrals}
         members={store.members}
+        memberships={store.memberships}
         expiredMembers={expiredMembers}
       />
     </AppShell>

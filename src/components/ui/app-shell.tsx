@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ReactNode, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { useToast } from "@/components/ui/toast-provider";
 import type { UserRole } from "@/lib/auth/rbac";
 
 interface AppShellProps {
   gymName: string;
+  gymId: string;
   role: UserRole;
   title: string;
   subtitle: string;
@@ -30,11 +31,15 @@ function roleLabel(role: UserRole): string {
   return "Owner";
 }
 
-export default function AppShell({ gymName, role, title, subtitle, children }: AppShellProps) {
+export default function AppShell({ gymName, gymId, role, title, subtitle, children }: AppShellProps) {
   const pathname = usePathname();
   const { showToast } = useToast();
   const [menuOpen, setMenuOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
+
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
 
   function closeMenu() {
     setMenuOpen(false);
@@ -53,7 +58,7 @@ export default function AppShell({ gymName, role, title, subtitle, children }: A
 
   return (
     <div className="layout-root">
-      <div className={`mobile-backdrop ${menuOpen ? "show" : ""}`} onClick={closeMenu} />
+      {menuOpen ? <div className="mobile-backdrop show" onClick={closeMenu} /> : null}
 
       <header className="mobile-topbar">
         <button
@@ -74,6 +79,7 @@ export default function AppShell({ gymName, role, title, subtitle, children }: A
       <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
         <div className="brand-block">
           <p className="eyebrow">FitOps</p>
+          <p className="gym-id-chip">Gym ID: {gymId}</p>
           <h2>
             <Link href="/" className="brand-link" onClick={closeMenu}>
               {gymName}
@@ -88,14 +94,14 @@ export default function AppShell({ gymName, role, title, subtitle, children }: A
             .map((link) => {
               const active = pathname === link.href;
               return (
-                <Link
+                <a
                   key={link.href}
                   href={link.href}
                   className={`nav-link ${active ? "active" : ""}`}
                   onClick={closeMenu}
                 >
                   {link.label}
-                </Link>
+                </a>
               );
             })}
           <button

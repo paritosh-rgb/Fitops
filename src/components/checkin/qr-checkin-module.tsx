@@ -1,8 +1,12 @@
 import Image from "next/image";
 import { buildSharedCheckinUrl, qrImageUrl } from "@/lib/checkin/qr";
 
-export default function QrCheckinModule() {
-  const checkinUrl = buildSharedCheckinUrl();
+interface QrCheckinModuleProps {
+  gymId: string;
+}
+
+export default function QrCheckinModule({ gymId }: QrCheckinModuleProps) {
+  const checkinUrl = buildSharedCheckinUrl(gymId);
   const imageUrl = qrImageUrl(checkinUrl);
 
   return (

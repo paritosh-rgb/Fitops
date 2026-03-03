@@ -1,14 +1,21 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { Expense } from "@/lib/types";
+import { FormEvent, useMemo, useState } from "react";
+import { Expense, Payment } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 
 interface OwnerModuleProps {
   expenses: Expense[];
+  payments: Payment[];
+  activeMembers: number;
   monthlyCollectedInr: number;
   monthlyExpensesInr: number;
   netProfitInr: number;
+}
+
+function pct(numerator: number, denominator: number): number {
+  if (!denominator) return 0;
+  return Math.round((numerator / denominator) * 100);
 }
 
 async function postJson(url: string, body: Record<string, unknown>) {
@@ -33,6 +40,41 @@ export default function OwnerModule(props: OwnerModuleProps) {
     amountInr: 0,
     note: "",
   });
+  const monthKey = new Date().toISOString().slice(0, 7);
+
+  const financeKpi = useMemo(() => {
+    const monthPayments = props.payments.filter((payment) => payment.date.startsWith(monthKey));
+    const billedInr = monthPayments.reduce((sum, row) => sum + row.amountInr, 0);
+    const paidInr = monthPayments
+      .filter((row) => row.status === "paid")
+      .reduce((sum, row) => sum + row.amountInr, 0);
+    const upiInr = monthPayments
+      .filter((row) => row.status === "paid" && row.method === "upi")
+      .reduce((sum, row) => sum + row.amountInr, 0);
+    const cashInr = monthPayments
+      .filter((row) => row.status === "paid" && row.method === "cash")
+      .reduce((sum, row) => sum + row.amountInr, 0);
+
+    return {
+      billedInr,
+      paidInr,
+      collectionEfficiencyPct: pct(paidInr, billedInr),
+      netMarginPct: pct(props.netProfitInr, props.monthlyCollectedInr),
+      expenseRatioPct: pct(props.monthlyExpensesInr, props.monthlyCollectedInr),
+      upiSharePct: pct(upiInr, paidInr),
+      cashSharePct: pct(cashInr, paidInr),
+      costPerActiveMember: props.activeMembers
+        ? Math.round(props.monthlyExpensesInr / props.activeMembers)
+        : 0,
+    };
+  }, [
+    monthKey,
+    props.activeMembers,
+    props.monthlyCollectedInr,
+    props.monthlyExpensesInr,
+    props.netProfitInr,
+    props.payments,
+  ]);
 
   async function addExpense(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -52,6 +94,54 @@ export default function OwnerModule(props: OwnerModuleProps) {
 
   return (
     <section className="module-grid">
+      <div className="card span-2 kpi-panel owner-kpi-panel">
+        <div className="section-head">
+          <h2>Owner KPI Lens</h2>
+          <span className="status-pill low">Finance control</span>
+        </div>
+        <div className="kpi-chip-grid">
+          <article className="kpi-chip c5">
+            <p>Collection Efficiency</p>
+            <strong>{financeKpi.collectionEfficiencyPct}%</strong>
+            <small>Collected vs billed</small>
+          </article>
+          <article className="kpi-chip c2">
+            <p>Net Margin</p>
+            <strong>{financeKpi.netMarginPct}%</strong>
+            <small>Profit share</small>
+          </article>
+          <article className="kpi-chip c4">
+            <p>Expense Ratio</p>
+            <strong>{financeKpi.expenseRatioPct}%</strong>
+            <small>Cost to topline</small>
+          </article>
+          <article className="kpi-chip c1">
+            <p>UPI Mix</p>
+            <strong>{financeKpi.upiSharePct}%</strong>
+            <small>Digital collections</small>
+          </article>
+          <article className="kpi-chip c3">
+            <p>Cost / Active Member</p>
+            <strong>Rs {financeKpi.costPerActiveMember.toLocaleString("en-IN")}</strong>
+            <small>Monthly servicing cost</small>
+          </article>
+        </div>
+        <div className="dual-progress">
+          <div>
+            <p>UPI</p>
+            <div className="bar-track">
+              <div className="bar-fill upi" style={{ width: `${financeKpi.upiSharePct}%` }} />
+            </div>
+          </div>
+          <div>
+            <p>Cash</p>
+            <div className="bar-track">
+              <div className="bar-fill cash" style={{ width: `${financeKpi.cashSharePct}%` }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
       <article className="card metric visual-card v5">
         <h3>Collection (MTD)</h3>
         <p>Rs {props.monthlyCollectedInr.toLocaleString("en-IN")}</p>

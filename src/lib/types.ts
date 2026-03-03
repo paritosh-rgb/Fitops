@@ -85,6 +85,51 @@ export interface Expense {
   date: string;
 }
 
+export interface WorkoutLog {
+  id: string;
+  memberId: string;
+  date: string;
+  completedExercises: string[];
+}
+
+export interface HydrationLog {
+  id: string;
+  memberId: string;
+  date: string;
+  glasses: number;
+}
+
+export interface RewardClaim {
+  id: string;
+  memberId: string;
+  streakTarget: 7 | 15 | 30;
+  rewardType: "discount_5" | "free_shaker" | "pt_trial";
+  claimedOn: string;
+}
+
+export interface ProgramDay {
+  day: string;
+  focus: string;
+  exercises: string[];
+}
+
+export interface DietMeal {
+  title: string;
+  items: string[];
+}
+
+export interface MemberProgram {
+  id: string;
+  memberId: string;
+  workoutDays: ProgramDay[];
+  trainerNote?: string;
+  calorieTarget: number;
+  proteinTargetG: number;
+  waterTargetGlasses: number;
+  dietMeals: DietMeal[];
+  updatedAt: string;
+}
+
 export interface GymStore {
   gymName: string;
   plans: Plan[];
@@ -97,6 +142,10 @@ export interface GymStore {
   leads: Lead[];
   referrals: Referral[];
   expenses: Expense[];
+  workoutLogs: WorkoutLog[];
+  hydrationLogs: HydrationLog[];
+  rewardClaims: RewardClaim[];
+  memberPrograms: MemberProgram[];
 }
 
 export interface DashboardMetric {

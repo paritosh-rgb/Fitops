@@ -1,14 +1,27 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { Lead, Member, Referral } from "@/lib/types";
+import { FormEvent, useMemo, useState } from "react";
+import { Lead, Member, Membership, Referral } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 
 interface GrowthModuleProps {
   leads: Lead[];
   referrals: Referral[];
   members: Member[];
+  memberships: Membership[];
   expiredMembers: Array<{ memberId: string; memberName: string }>;
+}
+
+function pct(numerator: number, denominator: number): number {
+  if (!denominator) return 0;
+  return Math.round((numerator / denominator) * 100);
+}
+
+function sourceLabel(source: Lead["source"]): string {
+  if (source === "walk_in") return "Walk-in";
+  if (source === "instagram") return "Instagram";
+  if (source === "referral") return "Referral";
+  return "Other";
 }
 
 async function postJson(url: string, body: Record<string, unknown>) {
@@ -23,7 +36,13 @@ async function postJson(url: string, body: Record<string, unknown>) {
   return payload;
 }
 
-export default function GrowthModule({ leads, referrals, members, expiredMembers }: GrowthModuleProps) {
+export default function GrowthModule({
+  leads,
+  referrals,
+  members,
+  memberships,
+  expiredMembers,
+}: GrowthModuleProps) {
   const { showToast } = useToast();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
@@ -37,6 +56,47 @@ export default function GrowthModule({ leads, referrals, members, expiredMembers
     referredPhone: "",
     rewardType: "extension_15_days",
   });
+  const currentMonth = new Date().toISOString().slice(0, 7);
+
+  const kpi = useMemo(() => {
+    const leadsThisMonth = leads.filter((lead) => lead.createdAt.startsWith(currentMonth));
+    const followedLeads = leads.filter(
+      (lead) => lead.status === "followed_up" || lead.status === "converted",
+    ).length;
+    const joinedReferrals = referrals.filter((row) => row.joined).length;
+    const joinsThisMonth = memberships.filter((row) => row.joinDate.startsWith(currentMonth)).length;
+
+    return {
+      leadBank: leads.length,
+      leadsThisMonth: leadsThisMonth.length,
+      followUpCoveragePct: pct(followedLeads, leads.length),
+      referralJoinRatePct: pct(joinedReferrals, referrals.length),
+      leadToJoinPct: pct(joinsThisMonth, leadsThisMonth.length),
+      winBackTargetPct: pct(expiredMembers.length, members.length),
+    };
+  }, [currentMonth, expiredMembers.length, leads, memberships, members.length, referrals]);
+
+  const sourceBreakdown = useMemo(() => {
+    const sourceTotals: Record<Lead["source"], number> = {
+      walk_in: 0,
+      instagram: 0,
+      referral: 0,
+      other: 0,
+    };
+
+    for (const lead of leads) {
+      sourceTotals[lead.source] += 1;
+    }
+
+    const maxCount = Math.max(1, ...Object.values(sourceTotals));
+    return (Object.keys(sourceTotals) as Array<Lead["source"]>).map((source) => ({
+      source,
+      label: sourceLabel(source),
+      count: sourceTotals[source],
+      widthPct: Math.round((sourceTotals[source] / maxCount) * 100),
+      sharePct: pct(sourceTotals[source], leads.length),
+    }));
+  }, [leads]);
 
   async function run(action: () => Promise<void>, successMessage?: string) {
     try {
@@ -73,6 +133,57 @@ export default function GrowthModule({ leads, referrals, members, expiredMembers
 
   return (
     <section className="module-grid">
+      <div className="card span-2 kpi-panel growth-kpi-panel">
+        <div className="section-head">
+          <h2>Growth KPI Studio</h2>
+          <span className="status-pill medium">Month: {currentMonth}</span>
+        </div>
+        <div className="kpi-chip-grid">
+          <article className="kpi-chip c1">
+            <p>Lead Bank</p>
+            <strong>{kpi.leadBank}</strong>
+            <small>{kpi.leadsThisMonth} this month</small>
+          </article>
+          <article className="kpi-chip c2">
+            <p>Follow-up Coverage</p>
+            <strong>{kpi.followUpCoveragePct}%</strong>
+            <small>Leads contacted</small>
+          </article>
+          <article className="kpi-chip c3">
+            <p>Referral Join Rate</p>
+            <strong>{kpi.referralJoinRatePct}%</strong>
+            <small>Friends converted</small>
+          </article>
+          <article className="kpi-chip c4">
+            <p>Lead to Join</p>
+            <strong>{kpi.leadToJoinPct}%</strong>
+            <small>Monthly proxy funnel</small>
+          </article>
+          <article className="kpi-chip c5">
+            <p>Win-back Target</p>
+            <strong>{kpi.winBackTargetPct}%</strong>
+            <small>Expired member pool</small>
+          </article>
+        </div>
+      </div>
+
+      <div className="card span-2 kpi-chart-card tinted-card t3">
+        <h2>Lead Source Momentum</h2>
+        <div className="source-bars">
+          {sourceBreakdown.map((source) => (
+            <div key={source.source} className="source-row">
+              <p>{source.label}</p>
+              <div className="bar-track">
+                <div className={`bar-fill ${source.source}`} style={{ width: `${source.widthPct}%` }} />
+              </div>
+              <span>
+                {source.count} ({source.sharePct}%)
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
       <form className="card tinted-card t1" onSubmit={createLead}>
         <h2>Walk-in Lead Tracker</h2>
         <label>

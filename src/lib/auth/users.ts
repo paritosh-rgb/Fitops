@@ -2,36 +2,64 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { dbClient, ensureDbSchema, isDbEnabled } from "@/lib/db";
 import type { UserRole } from "@/lib/auth/rbac";
+import { envGymId, normalizeGymId } from "@/lib/tenant";
 
 interface AuthUser {
   username: string;
   password: string;
   role: UserRole;
+  gymId: string;
 }
 
-const USERS_FILE = path.join(process.cwd(), "src", "data", "users.json");
+const SEED_USERS_FILE = path.join(process.cwd(), "src", "data", "users.json");
+const RUNTIME_USERS_FILE = process.env.VERCEL
+  ? path.join("/tmp", "fitops-users.json")
+  : path.join(process.cwd(), "src", "data", "users.runtime.json");
 
 async function readUsers(): Promise<AuthUser[]> {
   if (isDbEnabled()) {
-    await ensureDbSchema();
-    const sql = dbClient();
-    const rows = await sql<AuthUser[]>`
-      select username, password, role from fitops_users
-    `;
-    return rows.map((user) => ({
+    try {
+      await ensureDbSchema();
+      const sql = dbClient();
+      const rows = await sql<AuthUser[]>`
+        select username, password, role, gym_id as "gymId" from fitops_users
+      `;
+      return rows.map((user) => ({
+        username: user.username ?? "",
+        password: user.password ?? "",
+        role: user.role ?? "owner",
+        gymId: normalizeGymId(user.gymId),
+      }));
+    } catch {
+      return readUsersFromFiles();
+    }
+  }
+
+  return readUsersFromFiles();
+}
+
+async function readUsersFromFiles(): Promise<AuthUser[]> {
+  try {
+    const runtimeRaw = await fs.readFile(RUNTIME_USERS_FILE, "utf8");
+    const runtimeParsed = JSON.parse(runtimeRaw) as Array<Partial<AuthUser>>;
+    return runtimeParsed.map((user) => ({
       username: user.username ?? "",
       password: user.password ?? "",
       role: user.role ?? "owner",
+      gymId: normalizeGymId(user.gymId),
     }));
+  } catch {
+    // Fall through to seed file.
   }
 
   try {
-    const raw = await fs.readFile(USERS_FILE, "utf8");
+    const raw = await fs.readFile(SEED_USERS_FILE, "utf8");
     const parsed = JSON.parse(raw) as Array<Partial<AuthUser>>;
     return parsed.map((user) => ({
       username: user.username ?? "",
       password: user.password ?? "",
       role: user.role ?? "owner",
+      gymId: normalizeGymId(user.gymId),
     }));
   } catch {
     return [];
@@ -40,20 +68,24 @@ async function readUsers(): Promise<AuthUser[]> {
 
 async function writeUsers(users: AuthUser[]): Promise<void> {
   if (isDbEnabled()) {
-    await ensureDbSchema();
-    const sql = dbClient();
-    await sql`delete from fitops_users`;
+    try {
+      await ensureDbSchema();
+      const sql = dbClient();
+      await sql`delete from fitops_users`;
 
-    for (const user of users) {
-      await sql`
-        insert into fitops_users (username, password, role)
-        values (${user.username}, ${user.password}, ${user.role})
-      `;
+      for (const user of users) {
+        await sql`
+          insert into fitops_users (username, password, role, gym_id)
+          values (${user.username}, ${user.password}, ${user.role}, ${user.gymId})
+        `;
+      }
+      return;
+    } catch {
+      // Fall through to runtime file for degraded mode.
     }
-    return;
   }
 
-  await fs.writeFile(USERS_FILE, JSON.stringify(users, null, 2), "utf8");
+  await fs.writeFile(RUNTIME_USERS_FILE, JSON.stringify(users, null, 2), "utf8");
 }
 
 export async function getUserByCredentials(
@@ -74,18 +106,50 @@ export async function userExists(username: string): Promise<boolean> {
 }
 
 export async function registerUser(username: string, password: string, role: UserRole): Promise<void> {
+  const gymId = envGymId();
   if (isDbEnabled()) {
-    await ensureDbSchema();
-    const sql = dbClient();
-    await sql`
-      insert into fitops_users (username, password, role)
-      values (${username}, ${password}, ${role})
-      on conflict (username) do nothing
-    `;
-    return;
+    try {
+      await ensureDbSchema();
+      const sql = dbClient();
+      await sql`
+        insert into fitops_users (username, password, role, gym_id)
+        values (${username}, ${password}, ${role}, ${gymId})
+        on conflict (username) do nothing
+      `;
+      return;
+    } catch {
+      // Fall through to runtime file for degraded mode.
+    }
   }
 
   const users = await readUsers();
-  users.push({ username, password, role });
+  users.push({ username, password, role, gymId });
+  await writeUsers(users);
+}
+
+export async function registerUserWithGym(
+  username: string,
+  password: string,
+  role: UserRole,
+  gymIdInput: string,
+): Promise<void> {
+  const gymId = normalizeGymId(gymIdInput);
+  if (isDbEnabled()) {
+    try {
+      await ensureDbSchema();
+      const sql = dbClient();
+      await sql`
+        insert into fitops_users (username, password, role, gym_id)
+        values (${username}, ${password}, ${role}, ${gymId})
+        on conflict (username) do nothing
+      `;
+      return;
+    } catch {
+      // Fall through to runtime file for degraded mode.
+    }
+  }
+
+  const users = await readUsers();
+  users.push({ username, password, role, gymId });
   await writeUsers(users);
 }

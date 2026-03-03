@@ -19,7 +19,7 @@ const featureCards = [
   },
   {
     title: "Front Desk Speed",
-    copy: "Single QR check-in, member ID flow, and instant KPI updates for owners.",
+    copy: "Single QR check-in, member self-service status, and instant KPI updates for owners.",
     tone: "f-c",
   },
 ];
@@ -34,6 +34,7 @@ const modules = [
   "Members & Attendance",
   "Renewals & Reminders",
   "Pending Dues Recovery",
+  "Member Self Service",
   "QR Check-In",
   "Growth Campaigns",
   "Owner Expense Ledger",
@@ -66,8 +67,8 @@ export default function LandingPage() {
           <a href="#faq">FAQ</a>
         </nav>
         <div className="landing-auth-actions">
-          <Link href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark">Login</Link>
-          <Link href="/signup" className="landing-v2-btn mini primary-dark">Signup</Link>
+          <a href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark">Login</a>
+          <a href="/signup" className="landing-v2-btn mini primary-dark">Signup</a>
         </div>
       </header>
 

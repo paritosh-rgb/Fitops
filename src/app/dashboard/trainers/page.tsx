@@ -1,11 +1,14 @@
 import AppShell from "@/components/ui/app-shell";
+import TrainersModule from "@/components/trainers-module";
 import { buildDashboard } from "@/lib/analytics";
-import { getServerSessionRole } from "@/lib/auth/server-session";
+import { getServerSession } from "@/lib/auth/server-session";
 import { readStore } from "@/lib/store";
+
+export const dynamic = "force-dynamic";
 
 export default async function TrainersPage() {
   const store = await readStore();
-  const role = await getServerSessionRole();
+  const session = await getServerSession();
   const dashboard = buildDashboard(store);
   const totalSupplement = dashboard.trainerSnapshot.reduce(
     (sum, row) => sum + row.supplementRevenueInr,
@@ -15,7 +18,8 @@ export default async function TrainersPage() {
   return (
     <AppShell
       gymName={store.gymName}
-      role={role}
+      gymId={session.gymId}
+      role={session.role}
       title="Trainers"
       subtitle="Compare trainer-level accountability with member activity and revenue signals."
     >
@@ -32,47 +36,14 @@ export default async function TrainersPage() {
         </article>
       </section>
 
-      <section className="module-grid single-col">
-        <div className="card table-card tinted-card t4">
-          <h2>Trainer Performance Snapshot</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Trainer</th>
-                <th>Assigned Members</th>
-                <th>Active Members</th>
-                <th>Supplement Revenue</th>
-              </tr>
-            </thead>
-            <tbody>
-              {dashboard.trainerSnapshot.map((row) => (
-                <tr key={row.trainerId}>
-                  <td>{row.trainerName}</td>
-                  <td>{row.assignedMembers}</td>
-                  <td>
-                    <div className="score-cell">
-                      <span>{row.activeAssignedMembers}</span>
-                      <div className="score-track">
-                        <div
-                          className="score-fill"
-                          style={{
-                            width: `${
-                              row.assignedMembers
-                                ? Math.round((row.activeAssignedMembers / row.assignedMembers) * 100)
-                                : 0
-                            }%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                  </td>
-                  <td>Rs {row.supplementRevenueInr.toLocaleString("en-IN")}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
+      <TrainersModule
+        role={session.role}
+        trainers={store.trainers}
+        trainerSnapshot={dashboard.trainerSnapshot}
+        totalMembers={store.members.length}
+        members={store.members}
+        programs={store.memberPrograms}
+      />
     </AppShell>
   );
 }

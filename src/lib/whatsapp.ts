@@ -13,8 +13,8 @@ function normalizeIndianPhone(phone: string): string {
 }
 
 export async function sendWhatsAppMessage(toPhone: string, message: string): Promise<WhatsAppSendResult> {
-  const token = process.env.WHATSAPP_ACCESS_TOKEN;
-  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+  const token = process.env.WHATSAPP_ACCESS_TOKEN?.trim();
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID?.trim();
 
   if (!token || !phoneNumberId) {
     return { status: "sent", provider: "simulated" };
