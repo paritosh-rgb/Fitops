@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useToast } from "@/components/ui/toast-provider";
 
 interface CheckInClientProps {
   token: string;
   gymId: string;
   initialMemberId?: string;
+  mode?: "checkin" | "member";
 }
 
 type RewardTarget = 7 | 15 | 30;
@@ -111,8 +112,14 @@ interface MemberStatus {
   };
 }
 
-export default function CheckInClient({ token, gymId, initialMemberId = "" }: CheckInClientProps) {
+export default function CheckInClient({
+  token,
+  gymId,
+  initialMemberId = "",
+  mode = "checkin",
+}: CheckInClientProps) {
   const { showToast } = useToast();
+  const memberMode = mode === "member";
   const [memberId, setMemberId] = useState(initialMemberId);
   const [busy, setBusy] = useState(false);
   const [actionBusy, setActionBusy] = useState(false);
@@ -124,6 +131,13 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
   const [activeFitnessModule, setActiveFitnessModule] = useState<FitnessModule>("today");
   const [selectedDietDay, setSelectedDietDay] = useState(todayWeekdayName());
   const [battleOpponentCode, setBattleOpponentCode] = useState("");
+
+  useEffect(() => {
+    if (memberMode && initialMemberId.trim()) {
+      void loadStatus(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [memberMode, initialMemberId, token, gymId]);
 
   async function loadStatus(showSuccessToast = true) {
     const normalizedMemberId = memberId.trim();
@@ -346,38 +360,59 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
     }
   }
 
+  async function memberLogout() {
+    try {
+      await fetch("/api/public/member-auth/logout", { method: "POST" });
+    } finally {
+      window.location.assign(`/member/login?gym=${encodeURIComponent(gymId)}`);
+    }
+  }
+
   return (
     <div className="checkin-card">
-      <h1>Gym Check-In</h1>
-      <p className="muted">Enter your Member ID to check in and view your progress dashboard.</p>
+      <div className="section-head">
+        <h1>{memberMode ? "My Fitness Dashboard" : "Gym Check-In"}</h1>
+        {memberMode ? (
+          <button type="button" className="secondary-btn mini-btn" onClick={memberLogout}>
+            Logout
+          </button>
+        ) : null}
+      </div>
+      <p className="muted">
+        {memberMode
+          ? "Your personal progress, workout, renewals and rewards."
+          : "Enter your Member ID to check in and view your progress dashboard."}
+      </p>
 
-      <form onSubmit={checkIn} className="checkin-form">
-        <label>
-          Member ID
-          <input
-            required
-            value={memberId}
-            onChange={(e) => {
-              setMemberId(e.target.value);
-              setStatusData(null);
-            }}
-            placeholder="FL-1001"
-          />
-        </label>
-        <div className="checkin-actions">
-          <button type="submit" disabled={busy || !memberId.trim()}>
-            {busy ? "Checking in..." : "Check In"}
-          </button>
-          <button
-            type="button"
-            className="secondary-btn"
-            disabled={busy || actionBusy || !memberId.trim()}
-            onClick={() => loadStatus(true)}
-          >
-            {busy ? "Loading..." : "View My Status"}
-          </button>
-        </div>
-      </form>
+      {!memberMode ? (
+        <form onSubmit={checkIn} className="checkin-form">
+          <label>
+            Member ID
+            <input
+              required
+              value={memberId}
+              onChange={(e) => {
+                setMemberId(e.target.value);
+                setStatusData(null);
+              }}
+              placeholder="FL-1001"
+            />
+          </label>
+          <div className="checkin-actions">
+            <button type="submit" disabled={busy || !memberId.trim()}>
+              {busy ? "Checking in..." : "Check In"}
+            </button>
+            <button
+              type="button"
+              className="secondary-btn"
+              disabled={busy || actionBusy || !memberId.trim()}
+              onClick={() => loadStatus(true)}
+            >
+              {busy ? "Loading..." : "View My Status"}
+            </button>
+          </div>
+        </form>
+      ) : null}
 
       {statusData ? (
         <section className="member-status-panel">

@@ -1,5 +1,6 @@
 import CheckInClient from "@/components/checkin/check-in-client";
 import { getCheckinToken, isValidCheckinToken } from "@/lib/checkin/qr";
+import Link from "next/link";
 
 interface CheckInPageProps {
   searchParams: Promise<{ memberId?: string; token?: string; gym?: string }>;
@@ -25,6 +26,10 @@ export default async function PublicCheckInPage({ searchParams }: CheckInPagePro
 
   return (
     <div className="checkin-root">
+      <p className="muted">
+        Want personal dashboard access?{" "}
+        <Link href={`/member/login?gym=${encodeURIComponent(gymId)}`}>Member Login</Link>
+      </p>
       <CheckInClient token={resolvedToken} gymId={gymId} initialMemberId={memberId} />
     </div>
   );

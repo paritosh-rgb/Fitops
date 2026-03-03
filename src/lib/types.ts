@@ -57,6 +57,13 @@ export interface Member {
   assignedTrainerId?: string;
 }
 
+export interface MemberPortalAccount {
+  id: string;
+  memberId: string;
+  password: string;
+  createdAt: string;
+}
+
 export interface Lead {
   id: string;
   name: string;
@@ -178,6 +185,7 @@ export interface GymStore {
   memberPrograms: MemberProgram[];
   sweatCreditEvents: SweatCreditEvent[];
   streakBattles: StreakBattle[];
+  memberPortalAccounts: MemberPortalAccount[];
 }
 
 export interface DashboardMetric {
