@@ -398,17 +398,9 @@ export default function CheckInClient({
               placeholder="FL-1001"
             />
           </label>
-          <div className="checkin-actions">
+          <div className="checkin-actions single">
             <button type="submit" disabled={busy || !memberId.trim()}>
               {busy ? "Checking in..." : "Check In"}
-            </button>
-            <button
-              type="button"
-              className="secondary-btn"
-              disabled={busy || actionBusy || !memberId.trim()}
-              onClick={() => loadStatus(true)}
-            >
-              {busy ? "Loading..." : "View My Status"}
             </button>
           </div>
         </form>

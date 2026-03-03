@@ -1212,6 +1212,10 @@ th {
   grid-template-columns: 1fr 1fr;
 }
 
+.checkin-actions.single {
+  grid-template-columns: 1fr;
+}
+
 .secondary-btn {
   background: linear-gradient(135deg, #395a99, #4f83ff);
 }
