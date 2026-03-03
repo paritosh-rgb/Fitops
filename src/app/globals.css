@@ -1276,6 +1276,10 @@ th {
   gap: 0.7rem;
 }
 
+.member-two-modules {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .member-feature-card {
   border-radius: 12px;
   padding: 0.75rem;
@@ -1283,11 +1287,26 @@ th {
   background: #fff;
   display: grid;
   gap: 0.55rem;
+  align-content: start;
 }
 
 .member-feature-card h3 {
   margin: 0;
   font-size: 1rem;
+}
+
+.member-feature-card h4 {
+  margin: 0.2rem 0 0;
+  font-size: 0.86rem;
+  color: #2f4e85;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.renewals-module {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(96, 215, 148, 0.2), transparent 35%),
+    linear-gradient(180deg, #ffffff, #f4fff8);
 }
 
 .workout-feature {
@@ -1511,6 +1530,10 @@ th {
 
   .member-kpi-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .member-two-modules {
+    grid-template-columns: 1fr;
   }
 
   .water-actions,

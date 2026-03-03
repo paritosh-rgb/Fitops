@@ -291,50 +291,45 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
             </span>
           </div>
 
-          <div className="member-kpi-grid">
-            <article>
-              <p>Plan</p>
-              <strong>{statusData.membership?.planName ?? "Not active"}</strong>
+          <div className="member-feature-grid member-two-modules">
+            <article className="member-feature-card renewals-module">
+              <h3>Renewals Module</h3>
+              <div className="member-kpi-grid">
+                <article>
+                  <p>Plan</p>
+                  <strong>{statusData.membership?.planName ?? "Not active"}</strong>
+                </article>
+                <article>
+                  <p>Expiry</p>
+                  <strong>{statusData.membership?.expiryDate ?? "-"}</strong>
+                </article>
+                <article>
+                  <p>Days Left</p>
+                  <strong>{statusData.membership?.daysToExpiry ?? "-"}</strong>
+                </article>
+                <article>
+                  <p>Pending Dues</p>
+                  <strong>Rs {statusData.payment.pendingDuesInr.toLocaleString("en-IN")}</strong>
+                </article>
+              </div>
+              <p className="member-reco">{statusData.recommendation}</p>
+              <p className="muted">
+                Last visit: {statusData.attendance.lastVisitDate ?? "No check-in yet"} | Status:{" "}
+                {statusData.payment.latestStatus}
+              </p>
+              <button type="button" className="renew-btn" onClick={shareRenewalRequest}>
+                Renew / Ask for Help on WhatsApp
+              </button>
             </article>
-            <article>
-              <p>Expiry</p>
-              <strong>{statusData.membership?.expiryDate ?? "-"}</strong>
-            </article>
-            <article>
-              <p>Days Left</p>
-              <strong>{statusData.membership?.daysToExpiry ?? "-"}</strong>
-            </article>
-            <article>
-              <p>Visits (30 days)</p>
-              <strong>{statusData.attendance.visitsLast30Days}</strong>
-            </article>
-            <article>
-              <p>Streak</p>
-              <strong>{statusData.attendance.streakDays} days</strong>
-            </article>
-            <article>
-              <p>Pending Dues</p>
-              <strong>Rs {statusData.payment.pendingDuesInr.toLocaleString("en-IN")}</strong>
-            </article>
-          </div>
 
-          <p className="member-reco">{statusData.recommendation}</p>
-          <p className="muted">
-            Trainer: {statusData.trainerName ?? "Unassigned"} | Last visit:{" "}
-            {statusData.attendance.lastVisitDate ?? "No check-in yet"}
-          </p>
-          <button type="button" className="renew-btn" onClick={shareRenewalRequest}>
-            Renew / Ask for Help on WhatsApp
-          </button>
-
-          <div className="member-feature-grid">
             <article className="member-feature-card workout-feature">
               <div className="section-head">
-                <h3>My Workout Plan</h3>
+                <h3>Workout Plan Module</h3>
                 <span className="status-pill low">{statusData.workout.today.completionPct}% done</span>
               </div>
               <p className="muted">
-                {statusData.workout.today.day}: {statusData.workout.today.focus}
+                {statusData.workout.today.day}: {statusData.workout.today.focus} | Trainer:{" "}
+                {statusData.trainerName ?? "Unassigned"}
               </p>
               <div className="exercise-list">
                 {statusData.workout.today.exercises.map((exercise) => (
@@ -357,10 +352,8 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
                   </span>
                 ))}
               </div>
-            </article>
 
-            <article className="member-feature-card diet-feature">
-              <h3>My Diet Plan</h3>
+              <h4>Diet Plan</h4>
               <div className="diet-kpi-row">
                 <span>Calories: {statusData.diet.calorieTarget}</span>
                 <span>Protein: {statusData.diet.proteinTargetG}g</span>
@@ -388,14 +381,6 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
                   +1 Glass
                 </button>
               </div>
-              <div className="meal-list">
-                {statusData.diet.meals.map((meal) => (
-                  <div key={meal.title} className="meal-item">
-                    <h4>{meal.title}</h4>
-                    <p>{meal.items.join(" | ")}</p>
-                  </div>
-                ))}
-              </div>
               <div className="diet-actions">
                 <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">
                   Download PDF
@@ -404,10 +389,8 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
                   Share Plan
                 </button>
               </div>
-            </article>
 
-            <article className="member-feature-card rewards-feature">
-              <h3>Attendance Streak Rewards</h3>
+              <h4>Streak Rewards</h4>
               <p className="muted">Current streak: {statusData.rewards.currentStreak} days</p>
               <div className="streak-track">
                 <div
