@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import LandingGrowthExtras from "@/components/landing/landing-growth-extras";
+import LanguageToggle from "@/components/ui/language-toggle";
+import { useUILanguage } from "@/lib/i18n/ui-language";
 
 const highlights = [
   { label: "Renewal Recovery", value: "+15% to +30%" },
@@ -78,41 +82,81 @@ const testimonials = [
 ];
 
 export default function LandingPage() {
+  const { lang, setLang } = useUILanguage();
   const whatsappText = encodeURIComponent(
     "Hi FitOps team, I want a 15-minute demo for my gym.",
   );
+  const t = lang === "hi"
+    ? {
+        features: "फीचर्स",
+        roi: "आरओआई",
+        pricing: "प्राइसिंग",
+        modules: "मॉड्यूल्स",
+        faq: "प्रश्न",
+        login: "लॉगिन",
+        signup: "साइनअप",
+        tag: "लोकल जिम के लिए राजस्व वृद्धि सिस्टम",
+        hero: "अपने जिम को स्थिर रेवेन्यू इंजन बनाएं",
+        heroSub:
+          "भारतीय जिम के लिए बनाया गया, ताकि रिन्यूअल बढ़ें, ड्यूज रिकवर हों और मेंबर कंसिस्टेंसी बेहतर हो।",
+        launch: "डैशबोर्ड खोलें",
+        viewPricing: "प्राइसिंग देखें",
+        testimonials: "जिम ओनर्स क्या कहते हैं",
+        pricingTitle: "प्राइसिंग",
+        modulesTitle: "मॉड्यूल्स",
+        faqTitle: "FAQ",
+        whatsappDemo: "WhatsApp डेमो",
+      }
+    : {
+        features: "Features",
+        roi: "ROI",
+        pricing: "Pricing",
+        modules: "Modules",
+        faq: "FAQ",
+        login: "Login",
+        signup: "Signup",
+        tag: "Revenue Growth System for Local Gyms",
+        hero: "Turn Your Gym Into a Predictable Revenue Engine",
+        heroSub:
+          "Built for Indian gyms to increase renewals, recover dues, and improve member consistency without operational chaos.",
+        launch: "Launch Dashboard",
+        viewPricing: "View Pricing",
+        testimonials: "What Gym Owners Say",
+        pricingTitle: "Pricing",
+        modulesTitle: "Modules",
+        faqTitle: "FAQ",
+        whatsappDemo: "WhatsApp Demo",
+      };
 
   return (
     <div className="landing-v2" id="home">
       <header className="landing-topbar">
         <Link href="/" className="landing-brand">FitOps</Link>
         <nav className="landing-nav">
-          <a href="#features">Features</a>
-          <a href="#roi">ROI</a>
-          <a href="#pricing">Pricing</a>
-          <a href="#modules">Modules</a>
-          <a href="#faq">FAQ</a>
+          <a href="#features">{t.features}</a>
+          <a href="#roi">{t.roi}</a>
+          <a href="#pricing">{t.pricing}</a>
+          <a href="#modules">{t.modules}</a>
+          <a href="#faq">{t.faq}</a>
         </nav>
         <div className="landing-auth-actions">
-          <a href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark">Login</a>
-          <a href="/signup" className="landing-v2-btn mini primary-dark">Signup</a>
+          <LanguageToggle lang={lang} onChange={setLang} />
+          <a href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark">{t.login}</a>
+          <a href="/signup" className="landing-v2-btn mini primary-dark">{t.signup}</a>
         </div>
       </header>
 
       <section className="landing-v2-hero">
-        <p className="landing-v2-tag">Revenue Growth System for Local Gyms</p>
-        <h1>Turn Your Gym Into a Predictable Revenue Engine</h1>
-        <p>
-          Built for Indian gyms to increase renewals, recover dues, and improve member consistency
-          without operational chaos.
-        </p>
+        <p className="landing-v2-tag">{t.tag}</p>
+        <h1>{t.hero}</h1>
+        <p>{t.heroSub}</p>
 
         <div className="landing-v2-actions">
           <Link href="/login?next=%2Fdashboard" className="landing-v2-btn primary">
-            Launch Dashboard
+            {t.launch}
           </Link>
           <a href="#pricing" className="landing-v2-btn ghost">
-            View Pricing
+            {t.viewPricing}
           </a>
         </div>
 
@@ -135,10 +179,10 @@ export default function LandingPage() {
         ))}
       </section>
 
-      <LandingGrowthExtras />
+      <LandingGrowthExtras lang={lang} />
 
       <section className="landing-testimonials" id="proof">
-        <h2>What Gym Owners Say</h2>
+        <h2>{t.testimonials}</h2>
         <div className="landing-testimonial-grid">
           {testimonials.map((item) => (
             <article key={item.name}>
@@ -152,7 +196,7 @@ export default function LandingPage() {
       </section>
 
       <section id="pricing" className="landing-pricing">
-        <h2>Pricing</h2>
+        <h2>{t.pricingTitle}</h2>
         <div className="landing-pricing-grid">
           {pricing.map((plan) => (
             <article key={plan.name}>
@@ -165,7 +209,7 @@ export default function LandingPage() {
       </section>
 
       <section id="modules" className="landing-modules">
-        <h2>Modules</h2>
+        <h2>{t.modulesTitle}</h2>
         <div className="landing-module-grid">
           {modules.map((item) => (
             <article key={item}>{item}</article>
@@ -174,7 +218,7 @@ export default function LandingPage() {
       </section>
 
       <section id="faq" className="landing-faq">
-        <h2>FAQ</h2>
+        <h2>{t.faqTitle}</h2>
         <div className="landing-faq-grid">
           {faqs.map((item) => (
             <article key={item.q}>
@@ -191,7 +235,7 @@ export default function LandingPage() {
         target="_blank"
         rel="noreferrer"
       >
-        WhatsApp Demo
+        {t.whatsappDemo}
       </a>
     </div>
   );

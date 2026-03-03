@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useToast } from "@/components/ui/toast-provider";
+import LanguageToggle from "@/components/ui/language-toggle";
+import { useUILanguage } from "@/lib/i18n/ui-language";
 
 interface CheckInClientProps {
   token: string;
@@ -119,6 +121,7 @@ export default function CheckInClient({
   mode = "checkin",
 }: CheckInClientProps) {
   const { showToast } = useToast();
+  const { lang, setLang } = useUILanguage();
   const memberMode = mode === "member";
   const [memberId, setMemberId] = useState(initialMemberId);
   const [busy, setBusy] = useState(false);
@@ -131,6 +134,27 @@ export default function CheckInClient({
   const [activeFitnessModule, setActiveFitnessModule] = useState<FitnessModule>("today");
   const [selectedDietDay, setSelectedDietDay] = useState(todayWeekdayName());
   const [battleOpponentCode, setBattleOpponentCode] = useState("");
+  const t = lang === "hi"
+    ? {
+        memberDashboard: "मेरा फिटनेस डैशबोर्ड",
+        gymCheckin: "जिम चेक-इन",
+        logout: "लॉगआउट",
+        memberCopy: "आपकी व्यक्तिगत प्रगति, वर्कआउट, रिन्यूअल और रिवॉर्ड्स।",
+        checkinCopy: "मेंबर आईडी दर्ज करें और चेक-इन करें।",
+        memberId: "मेंबर आईडी",
+        checkIn: "चेक-इन",
+        checkingIn: "चेक-इन हो रहा है...",
+      }
+    : {
+        memberDashboard: "My Fitness Dashboard",
+        gymCheckin: "Gym Check-In",
+        logout: "Logout",
+        memberCopy: "Your personal progress, workout, renewals and rewards.",
+        checkinCopy: "Enter your Member ID to check in and view your progress dashboard.",
+        memberId: "Member ID",
+        checkIn: "Check In",
+        checkingIn: "Checking in...",
+      };
 
   useEffect(() => {
     if (memberMode && initialMemberId.trim()) {
@@ -373,23 +397,22 @@ export default function CheckInClient({
   return (
     <div className="checkin-card">
       <div className="section-head">
-        <h1>{memberMode ? "My Fitness Dashboard" : "Gym Check-In"}</h1>
+        <h1>{memberMode ? t.memberDashboard : t.gymCheckin}</h1>
+        <LanguageToggle lang={lang} onChange={setLang} />
         {memberMode ? (
           <button type="button" className="secondary-btn mini-btn" onClick={memberLogout}>
-            Logout
+            {t.logout}
           </button>
         ) : null}
       </div>
       <p className="muted">
-        {memberMode
-          ? "Your personal progress, workout, renewals and rewards."
-          : "Enter your Member ID to check in and view your progress dashboard."}
+        {memberMode ? t.memberCopy : t.checkinCopy}
       </p>
 
       {!memberMode ? (
         <form onSubmit={checkIn} className="checkin-form">
           <label>
-            Member ID
+            {t.memberId}
             <input
               required
               value={memberId}
@@ -402,7 +425,7 @@ export default function CheckInClient({
           </label>
           <div className="checkin-actions single">
             <button type="submit" disabled={busy || !memberId.trim()}>
-              {busy ? "Checking in..." : "Check In"}
+              {busy ? t.checkingIn : t.checkIn}
             </button>
           </div>
         </form>

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useState } from "react";
 import { useToast } from "@/components/ui/toast-provider";
+import LanguageToggle from "@/components/ui/language-toggle";
+import { useUILanguage } from "@/lib/i18n/ui-language";
 
 interface MemberSignupFormProps {
   gymIdParam?: string;
@@ -10,6 +12,7 @@ interface MemberSignupFormProps {
 
 export default function MemberSignupForm({ gymIdParam = "" }: MemberSignupFormProps) {
   const { showToast } = useToast();
+  const { lang, setLang } = useUILanguage();
   const [gymId, setGymId] = useState(gymIdParam);
   const [memberId, setMemberId] = useState("");
   const [name, setName] = useState("");
@@ -58,51 +61,83 @@ export default function MemberSignupForm({ gymIdParam = "" }: MemberSignupFormPr
   }
 
   const loginHref = `/member/login${gymId.trim() ? `?gym=${encodeURIComponent(gymId.trim())}` : ""}`;
+  const t = lang === "hi"
+    ? {
+        title: "मेंबर अकाउंट बनाएं",
+        subtitle: "मेंबर आईडी + पासवर्ड से अपना पर्सनल डैशबोर्ड एक्सेस करें।",
+        gymId: "जिम आईडी",
+        memberId: "मेंबर आईडी",
+        name: "नाम (नए मेंबर के लिए आवश्यक)",
+        phone: "फोन (नए मेंबर के लिए आवश्यक)",
+        password: "पासवर्ड",
+        confirm: "कन्फर्म पासवर्ड",
+        signup: "साइनअप",
+        creating: "अकाउंट बन रहा है...",
+        already: "पहले से अकाउंट है?",
+        login: "लॉगिन",
+      }
+    : {
+        title: "Create Member Account",
+        subtitle: "Use member ID + password to access your personal workout and renewal dashboard.",
+        gymId: "Gym ID",
+        memberId: "Member ID",
+        name: "Name (required for new member)",
+        phone: "Phone (required for new member)",
+        password: "Password",
+        confirm: "Confirm Password",
+        signup: "Signup",
+        creating: "Creating account...",
+        already: "Already have account?",
+        login: "Login",
+      };
 
   return (
     <form className="signup-card" onSubmit={onSubmit}>
       <p className="landing-v2-tag">FitOps Member</p>
-      <h1>Create Member Account</h1>
-      <p>Use member ID + password to access your personal workout and renewal dashboard.</p>
+      <div className="section-head">
+        <h1>{t.title}</h1>
+        <LanguageToggle lang={lang} onChange={setLang} />
+      </div>
+      <p>{t.subtitle}</p>
 
       <label>
-        Gym ID
+        {t.gymId}
         <input value={gymId} onChange={(e) => setGymId(e.target.value)} placeholder="bodyfit" />
       </label>
 
       <label>
-        Member ID
+        {t.memberId}
         <input value={memberId} onChange={(e) => setMemberId(e.target.value)} placeholder="FL-1001" />
       </label>
 
       <div className="inline-fields">
         <label>
-          Name (required for new member)
+          {t.name}
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Rohit Sharma" />
         </label>
         <label>
-          Phone (required for new member)
+          {t.phone}
           <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="9876543210" />
         </label>
       </div>
 
       <div className="inline-fields">
         <label>
-          Password
+          {t.password}
           <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} placeholder="Minimum 6 characters" />
         </label>
         <label>
-          Confirm Password
+          {t.confirm}
           <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Re-enter password" />
         </label>
       </div>
 
       <button type="submit" disabled={loading}>
-        {loading ? "Creating account..." : "Signup"}
+        {loading ? t.creating : t.signup}
       </button>
 
       <p className="muted member-auth-link">
-        Already have account? <Link href={loginHref}>Login</Link>
+        {t.already} <Link href={loginHref}>{t.login}</Link>
       </p>
       {error ? <p className="error">{error}</p> : null}
     </form>
