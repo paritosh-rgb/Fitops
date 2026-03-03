@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import LandingGrowthExtras from "@/components/landing/landing-growth-extras";
 import LanguageToggle from "@/components/ui/language-toggle";
 import { useUILanguage } from "@/lib/i18n/ui-language";
@@ -194,17 +195,24 @@ export default function LandingPage() {
       </header>
 
       <section className="landing-v2-hero">
-        <p className="landing-v2-tag">{t.tag}</p>
-        <h1>{t.hero}</h1>
-        <p>{t.heroSub}</p>
+        <div className="landing-v2-hero-main">
+          <div className="landing-v2-hero-copy">
+            <p className="landing-v2-tag">{t.tag}</p>
+            <h1>{t.hero}</h1>
+            <p>{t.heroSub}</p>
 
-        <div className="landing-v2-actions">
-          <Link href="/login?next=%2Fdashboard" className="landing-v2-btn primary">
-            {t.launch}
-          </Link>
-          <a href="#pricing" className="landing-v2-btn ghost">
-            {t.viewPricing}
-          </a>
+            <div className="landing-v2-actions">
+              <Link href="/login?next=%2Fdashboard" className="landing-v2-btn primary">
+                {t.launch}
+              </Link>
+              <a href="#pricing" className="landing-v2-btn ghost">
+                {t.viewPricing}
+              </a>
+            </div>
+          </div>
+          <div className="landing-hero-visual" aria-hidden="true">
+            <Image src="/landing-gym-hero.svg" alt="" width={640} height={420} priority />
+          </div>
         </div>
 
         <div className="landing-v2-highlights">

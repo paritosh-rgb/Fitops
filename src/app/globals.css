@@ -521,6 +521,18 @@ th {
   gap: 1rem;
 }
 
+.landing-v2-hero-main {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 1rem;
+  align-items: center;
+}
+
+.landing-v2-hero-copy {
+  display: grid;
+  gap: 0.9rem;
+}
+
 .landing-v2-tag {
   margin: 0;
   width: fit-content;
@@ -544,6 +556,19 @@ th {
   max-width: 62ch;
   color: #e6efff;
   font-size: clamp(1rem, 1.6vw, 1.1rem);
+}
+
+.landing-hero-visual {
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 16px 40px rgba(5, 18, 51, 0.35);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.landing-hero-visual img {
+  display: block;
+  width: 100%;
+  height: auto;
 }
 
 .landing-v2-actions {
@@ -2010,6 +2035,10 @@ th {
   }
 
   .landing-live-board {
+    grid-template-columns: 1fr;
+  }
+
+  .landing-v2-hero-main {
     grid-template-columns: 1fr;
   }
 
