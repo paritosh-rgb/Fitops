@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
 
   const today = new Date().toISOString().slice(0, 10);
   const memberId = makeId("member");
+  const defaultPortalPassword = (process.env.APP_MEMBER_DEFAULT_PASSWORD ?? "fitops@123").trim();
 
   store.members.push({
     id: memberId,
@@ -57,6 +58,13 @@ export async function POST(request: NextRequest) {
     phone: body.phone,
     preferredLanguage: body.preferredLanguage ?? "en",
     assignedTrainerId: body.assignedTrainerId,
+  });
+
+  store.memberPortalAccounts.push({
+    id: makeId("macc"),
+    memberId,
+    password: defaultPortalPassword,
+    createdAt: new Date().toISOString(),
   });
 
   store.memberships.push({
@@ -79,5 +87,10 @@ export async function POST(request: NextRequest) {
   }
 
   await writeStore(store);
-  return NextResponse.json({ ok: true, memberId });
+  return NextResponse.json({
+    ok: true,
+    memberId,
+    memberCode: normalizedCode,
+    portalPassword: defaultPortalPassword,
+  });
 }

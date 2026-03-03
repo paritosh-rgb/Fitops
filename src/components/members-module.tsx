@@ -29,6 +29,8 @@ async function sendJson(url: string, body: Record<string, unknown>, method = "PO
     const payload = (await response.json().catch(() => ({}))) as { error?: string };
     throw new Error(payload.error ?? "Request failed");
   }
+
+  return (await response.json().catch(() => ({}))) as Record<string, unknown>;
 }
 
 export default function MembersModule({
@@ -42,6 +44,7 @@ export default function MembersModule({
   const effectivePlans = plans.length > 0 ? plans : FALLBACK_PLANS;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [createdPortal, setCreatedPortal] = useState<{ memberCode: string; password: string } | null>(null);
   const [attendanceDate, setAttendanceDate] = useState(new Date().toISOString().slice(0, 10));
 
   const [newMember, setNewMember] = useState({
@@ -113,9 +116,23 @@ export default function MembersModule({
 
   async function createMember(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    await runAction(async () => {
-      await sendJson("/api/members", newMember);
-    }, "Member created successfully");
+    try {
+      setBusy(true);
+      setError(null);
+      const payload = await sendJson("/api/members", newMember);
+      const memberCode = String(payload.memberCode ?? newMember.memberCode).trim();
+      const portalPassword = String(payload.portalPassword ?? "fitops@123");
+      setCreatedPortal({ memberCode, password: portalPassword });
+      showToast(`Member created. Default portal password: ${portalPassword}`, "success");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1800);
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Something went wrong";
+      setBusy(false);
+      setError(message);
+      showToast(message, "error");
+    }
   }
 
   function startEdit(memberId: string) {
@@ -200,6 +217,15 @@ export default function MembersModule({
         <button type="submit" disabled={busy}>
           {busy ? "Saving..." : "Create Member"}
         </button>
+        {createdPortal ? (
+          <div className="member-default-password">
+            <strong>Member Portal Credentials</strong>
+            <p>Member ID: {createdPortal.memberCode}</p>
+            <p>Default Password: {createdPortal.password}</p>
+          </div>
+        ) : (
+          <p className="muted small">Default Member Portal password: fitops@123</p>
+        )}
       </form>
 
       <div className="card">
