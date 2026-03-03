@@ -136,6 +136,30 @@ export interface MemberProgram {
   updatedAt: string;
 }
 
+export interface SweatCreditEvent {
+  id: string;
+  memberId: string;
+  date: string;
+  points: number;
+  reason:
+    | "checkin"
+    | "workout_complete"
+    | "hydration_target"
+    | "redeem_pt_minutes"
+    | "redeem_supplement";
+}
+
+export interface StreakBattle {
+  id: string;
+  challengerMemberId: string;
+  opponentMemberId: string;
+  startDate: string;
+  endDate: string;
+  status: "active" | "completed";
+  winnerMemberId?: string;
+  createdAt: string;
+}
+
 export interface GymStore {
   gymName: string;
   plans: Plan[];
@@ -152,6 +176,8 @@ export interface GymStore {
   hydrationLogs: HydrationLog[];
   rewardClaims: RewardClaim[];
   memberPrograms: MemberProgram[];
+  sweatCreditEvents: SweatCreditEvent[];
+  streakBattles: StreakBattle[];
 }
 
 export interface DashboardMetric {

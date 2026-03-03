@@ -72,6 +72,42 @@ interface MemberStatus {
       claimed: boolean;
     }>;
   };
+  twin: {
+    weeklyScore: number;
+    level: "Bronze" | "Silver" | "Gold" | "Titan";
+    auraColor: string;
+    avatarLabel: string;
+  };
+  sweatCredits: {
+    balance: number;
+    redemptions: Array<{ code: "pt_15" | "supp_100"; label: string; points: number }>;
+  };
+  streakBattles: {
+    active: Array<{
+      id: string;
+      status: "active" | "completed";
+      startDate: string;
+      endDate: string;
+      opponentName: string;
+      myScore: number;
+      opponentScore: number;
+    }>;
+    recent: Array<{
+      id: string;
+      status: "active" | "completed";
+      startDate: string;
+      endDate: string;
+      opponentName: string;
+      myScore: number;
+      opponentScore: number;
+    }>;
+    leaderboard: Array<{
+      memberId: string;
+      name: string;
+      memberCode: string;
+      score: number;
+    }>;
+  };
 }
 
 export default function CheckInClient({ token, gymId, initialMemberId = "" }: CheckInClientProps) {
@@ -85,6 +121,7 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
   const [menuOpen, setMenuOpen] = useState(false);
   const [activeModule, setActiveModule] = useState<"renewals" | "workout">("workout");
   const [selectedDietDay, setSelectedDietDay] = useState(todayWeekdayName());
+  const [battleOpponentCode, setBattleOpponentCode] = useState("");
 
   async function loadStatus(showSuccessToast = true) {
     const normalizedMemberId = memberId.trim();
@@ -203,6 +240,28 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
         target,
       },
       "Reward claimed successfully",
+    );
+  }
+
+  async function createBattle() {
+    if (!battleOpponentCode.trim()) return;
+    await runMemberAction(
+      {
+        action: "create_battle",
+        opponentMemberCode: battleOpponentCode.trim(),
+      },
+      "Battle created",
+    );
+    setBattleOpponentCode("");
+  }
+
+  async function redeemCredits(code: "pt_15" | "supp_100") {
+    await runMemberAction(
+      {
+        action: "redeem_sweat",
+        redemptionCode: code,
+      },
+      "Redemption request submitted",
     );
   }
 
@@ -418,6 +477,18 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
                   <span className="status-pill low">{statusData.workout.today.completionPct}% done</span>
                 </div>
                 <p className="module-caption">Daily training tasks, diet targets and reward progress.</p>
+                <div className="twin-avatar-card">
+                  <h4>Gym Twin Avatar</h4>
+                  <div className="twin-avatar-meta">
+                    <span className="twin-aura" style={{ background: statusData.twin.auraColor }} />
+                    <div>
+                      <strong>{statusData.twin.avatarLabel}</strong>
+                      <p className="muted">
+                        Level: {statusData.twin.level} | Weekly Score: {statusData.twin.weeklyScore}
+                      </p>
+                    </div>
+                  </div>
+                </div>
                 <p className="muted">
                   {statusData.workout.today.day}: {statusData.workout.today.focus} | Trainer:{" "}
                   {statusData.trainerName ?? "Unassigned"}
@@ -539,6 +610,78 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
                           {milestone.unlocked ? "Claim" : "Locked"}
                         </button>
                       )}
+                    </div>
+                  ))}
+                </div>
+
+                <h4>Sweat Credits Economy</h4>
+                <p className="muted">Balance: {statusData.sweatCredits.balance} credits</p>
+                <div className="reward-list">
+                  {statusData.sweatCredits.redemptions.map((redemption) => (
+                    <div key={redemption.code} className="reward-item">
+                      <div>
+                        <strong>{redemption.label}</strong>
+                        <p>Cost: {redemption.points} credits</p>
+                      </div>
+                      <button
+                        type="button"
+                        className="mini-btn"
+                        disabled={busy || actionBusy || statusData.sweatCredits.balance < redemption.points}
+                        onClick={() => redeemCredits(redemption.code)}
+                      >
+                        Redeem
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                <h4>Streak Battles</h4>
+                <div className="battle-create-row">
+                  <input
+                    placeholder="Friend member ID (e.g. FL-1002)"
+                    value={battleOpponentCode}
+                    onChange={(e) => setBattleOpponentCode(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    className="mini-btn"
+                    disabled={busy || actionBusy || !battleOpponentCode.trim()}
+                    onClick={createBattle}
+                  >
+                    Challenge
+                  </button>
+                </div>
+                <div className="reward-list">
+                  {statusData.streakBattles.active.length === 0 ? (
+                    <p className="muted">No active battle yet.</p>
+                  ) : (
+                    statusData.streakBattles.active.map((battle) => (
+                      <div key={battle.id} className="reward-item">
+                        <div>
+                          <strong>vs {battle.opponentName}</strong>
+                          <p>
+                            {battle.startDate} to {battle.endDate}
+                          </p>
+                        </div>
+                        <span className="status-pill medium">
+                          {battle.myScore} : {battle.opponentScore}
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <h4>Gym TV Leaderboard</h4>
+                <div className="reward-list">
+                  {statusData.streakBattles.leaderboard.slice(0, 5).map((row, index) => (
+                    <div key={row.memberId} className="reward-item">
+                      <div>
+                        <strong>
+                          #{index + 1} {row.name}
+                        </strong>
+                        <p>{row.memberCode}</p>
+                      </div>
+                      <span className="status-pill paid">{row.score}</span>
                     </div>
                   ))}
                 </div>

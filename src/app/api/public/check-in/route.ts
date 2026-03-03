@@ -33,6 +33,13 @@ export async function POST(request: NextRequest) {
       memberId: member.id,
       date: today,
     });
+    store.sweatCreditEvents.push({
+      id: makeId("credit"),
+      memberId: member.id,
+      date: today,
+      points: 10,
+      reason: "checkin",
+    });
     await writeStore(store, gymId);
   }
 

@@ -12,7 +12,8 @@ function isPublicApi(pathname: string): boolean {
     pathname === "/api/auth/signup" ||
     pathname === "/api/public/check-in" ||
     pathname === "/api/public/member-status" ||
-    pathname === "/api/public/diet-plan-pdf"
+    pathname === "/api/public/diet-plan-pdf" ||
+    pathname === "/api/public/tv-leaderboard"
   );
 }
 

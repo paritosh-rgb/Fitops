@@ -57,6 +57,8 @@ function normalizeStore(parsed: Partial<GymStore>): GymStore {
     hydrationLogs: parsed.hydrationLogs ?? base.hydrationLogs,
     rewardClaims: parsed.rewardClaims ?? base.rewardClaims,
     memberPrograms: parsed.memberPrograms ?? base.memberPrograms,
+    sweatCreditEvents: parsed.sweatCreditEvents ?? base.sweatCreditEvents,
+    streakBattles: parsed.streakBattles ?? base.streakBattles,
     members:
       (parsed.members ?? base.members).map((member) => ({
         ...member,
@@ -82,6 +84,8 @@ function defaultStore(): GymStore {
     hydrationLogs: [],
     rewardClaims: [],
     memberPrograms: [],
+    sweatCreditEvents: [],
+    streakBattles: [],
   };
 }
 

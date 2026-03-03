@@ -1580,6 +1580,40 @@ th {
   color: #57514a;
 }
 
+.twin-avatar-card {
+  border-radius: 12px;
+  padding: 0.6rem 0.7rem;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255, 174, 102, 0.2), transparent 35%),
+    linear-gradient(180deg, #fff, #fff7ef);
+  box-shadow: inset 0 0 0 1px #f0d9bc;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.twin-avatar-card h4 {
+  margin: 0;
+}
+
+.twin-avatar-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.twin-aura {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.8), 0 0 14px rgba(0, 0, 0, 0.15);
+}
+
+.battle-create-row {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: 1fr auto;
+}
+
 .toast-stack {
   position: fixed;
   right: 1rem;
@@ -1660,6 +1694,10 @@ th {
 
   .water-actions,
   .diet-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .battle-create-row {
     grid-template-columns: 1fr;
   }
 }

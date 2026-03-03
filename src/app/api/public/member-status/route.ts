@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { isValidCheckinToken } from "@/lib/checkin/qr";
+import { addDays, battleScoreForMember, creditsBalance, gymTwinProfile, leaderboard, todayIso } from "@/lib/engagement";
 import { makeId, readStore, writeStore } from "@/lib/store";
 import { GymStore, Member } from "@/lib/types";
 import { normalizeGymId } from "@/lib/tenant";
@@ -38,10 +39,6 @@ type RewardTarget = 7 | 15 | 30;
 
 function toDate(value: string): Date {
   return new Date(`${value}T00:00:00`);
-}
-
-function isoToday(): string {
-  return new Date().toISOString().slice(0, 10);
 }
 
 function dayDiff(from: Date, to: Date): number {
@@ -141,7 +138,7 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
             ? memberProgram.dietMeals
             : DAILY_DIET_PLAN.meals,
       }));
-  const todayIso = isoToday();
+  const today = todayIso();
   const todayIndex = workoutIndexForToday();
   const workoutPlan = effectiveWorkout[todayIndex] ?? effectiveWorkout[0];
   const todayDayName = dayNameForIndex(todayIndex);
@@ -149,7 +146,7 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
     effectiveDietDays.find((row) => row.day.toLowerCase() === todayDayName.toLowerCase()) ??
     effectiveDietDays[0];
   const workoutLog = store.workoutLogs.find(
-    (row) => row.memberId === member.id && row.date === todayIso,
+    (row) => row.memberId === member.id && row.date === today,
   );
   const completedSet = new Set(workoutLog?.completedExercises ?? []);
   const workoutExercises = workoutPlan.exercises.map((name) => ({
@@ -158,9 +155,29 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
   }));
   const completedCount = workoutExercises.filter((row) => row.completed).length;
   const completionPct = Math.round((completedCount / workoutExercises.length) * 100);
-  const hydration = store.hydrationLogs.find((row) => row.memberId === member.id && row.date === todayIso);
+  const hydration = store.hydrationLogs.find((row) => row.memberId === member.id && row.date === today);
   const todayWaterGlasses = hydration?.glasses ?? 0;
   const claims = store.rewardClaims.filter((row) => row.memberId === member.id);
+  const twin = gymTwinProfile(member.id, store);
+  const credits = creditsBalance(member.id, store);
+  const memberById = new Map(store.members.map((row) => [row.id, row]));
+  const battles = store.streakBattles
+    .filter((row) => row.challengerMemberId === member.id || row.opponentMemberId === member.id)
+    .map((row) => {
+      const opponentId = row.challengerMemberId === member.id ? row.opponentMemberId : row.challengerMemberId;
+      const opponent = memberById.get(opponentId);
+      const myScore = battleScoreForMember(member.id, store, row.startDate, row.endDate);
+      const opponentScore = battleScoreForMember(opponentId, store, row.startDate, row.endDate);
+      return {
+        id: row.id,
+        status: row.status,
+        startDate: row.startDate,
+        endDate: row.endDate,
+        opponentName: opponent?.name ?? "Unknown",
+        myScore,
+        opponentScore,
+      };
+    });
 
   return {
     ok: true,
@@ -232,6 +249,19 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
         claimed: claims.some((row) => row.streakTarget === target),
       })),
     },
+    twin,
+    sweatCredits: {
+      balance: credits,
+      redemptions: [
+        { code: "pt_15", label: "15 PT minutes", points: 120 },
+        { code: "supp_100", label: "Supplement voucher Rs 100", points: 80 },
+      ],
+    },
+    streakBattles: {
+      active: battles.filter((row) => row.status === "active"),
+      recent: battles.filter((row) => row.status === "completed").slice(0, 3),
+      leaderboard: leaderboard(store),
+    },
   };
 }
 
@@ -285,10 +315,12 @@ export async function POST(request: NextRequest) {
     memberId?: string;
     token?: string;
     gymId?: string;
-    action?: "toggle_exercise" | "set_water" | "claim_reward";
+    action?: "toggle_exercise" | "set_water" | "claim_reward" | "create_battle" | "redeem_sweat";
     exerciseName?: string;
     glasses?: number;
     target?: number;
+    opponentMemberCode?: string;
+    redemptionCode?: "pt_15" | "supp_100";
   };
 
   if (!body.action) {
@@ -298,7 +330,7 @@ export async function POST(request: NextRequest) {
   const context = await resolveMember(request, "body");
   if ("error" in context) return context.error;
 
-  const today = isoToday();
+  const today = todayIso();
   let message = "Updated successfully";
 
   if (body.action === "toggle_exercise") {
@@ -336,6 +368,13 @@ export async function POST(request: NextRequest) {
       message = `${exerciseName} marked pending`;
     } else {
       log.completedExercises.push(exerciseName);
+      context.store.sweatCreditEvents.push({
+        id: makeId("credit"),
+        memberId: context.member.id,
+        date: today,
+        points: 5,
+        reason: "workout_complete",
+      });
       message = `${exerciseName} marked completed`;
     }
   } else if (body.action === "set_water") {
@@ -347,11 +386,22 @@ export async function POST(request: NextRequest) {
     let log = context.store.hydrationLogs.find(
       (row) => row.memberId === context.member.id && row.date === today,
     );
+    const before = log?.glasses ?? 0;
     if (!log) {
       log = { id: makeId("hydr"), memberId: context.member.id, date: today, glasses };
       context.store.hydrationLogs.push(log);
     } else {
       log.glasses = glasses;
+    }
+    const target = 10;
+    if (before < target && glasses >= target) {
+      context.store.sweatCreditEvents.push({
+        id: makeId("credit"),
+        memberId: context.member.id,
+        date: today,
+        points: 4,
+        reason: "hydration_target",
+      });
     }
     message = `Water intake set to ${glasses} glasses`;
   } else if (body.action === "claim_reward") {
@@ -384,6 +434,84 @@ export async function POST(request: NextRequest) {
       claimedOn: today,
     });
     message = `${REWARD_MAP[target].label} claimed`;
+  } else if (body.action === "create_battle") {
+    const opponentCode = body.opponentMemberCode?.trim();
+    if (!opponentCode) {
+      return NextResponse.json({ error: "opponentMemberCode is required" }, { status: 400 });
+    }
+
+    const opponent = context.store.members.find(
+      (row) => row.memberCode.toLowerCase() === opponentCode.toLowerCase(),
+    );
+    if (!opponent) {
+      return NextResponse.json({ error: "Opponent member not found" }, { status: 404 });
+    }
+    if (opponent.id === context.member.id) {
+      return NextResponse.json({ error: "Cannot challenge yourself" }, { status: 400 });
+    }
+
+    const alreadyActive = context.store.streakBattles.some(
+      (row) =>
+        row.status === "active" &&
+        ((row.challengerMemberId === context.member.id && row.opponentMemberId === opponent.id) ||
+          (row.challengerMemberId === opponent.id && row.opponentMemberId === context.member.id)),
+    );
+    if (alreadyActive) {
+      return NextResponse.json({ error: "Battle already active with this member" }, { status: 409 });
+    }
+
+    context.store.streakBattles.push({
+      id: makeId("battle"),
+      challengerMemberId: context.member.id,
+      opponentMemberId: opponent.id,
+      startDate: today,
+      endDate: addDays(today, 6),
+      status: "active",
+      createdAt: today,
+    });
+    message = `Battle challenge sent to ${opponent.name}`;
+  } else if (body.action === "redeem_sweat") {
+    const costMap = { pt_15: 120, supp_100: 80 } as const;
+    const redemption = body.redemptionCode;
+    if (!redemption || !(redemption in costMap)) {
+      return NextResponse.json({ error: "Invalid redemptionCode" }, { status: 400 });
+    }
+
+    const cost = costMap[redemption];
+    const balance = creditsBalance(context.member.id, context.store);
+    if (balance < cost) {
+      return NextResponse.json({ error: "Not enough sweat credits" }, { status: 400 });
+    }
+    context.store.sweatCreditEvents.push({
+      id: makeId("credit"),
+      memberId: context.member.id,
+      date: today,
+      points: -cost,
+      reason: redemption === "pt_15" ? "redeem_pt_minutes" : "redeem_supplement",
+    });
+    message = redemption === "pt_15" ? "15 PT minutes redeemed" : "Supplement voucher redeemed";
+  }
+
+  for (const battle of context.store.streakBattles) {
+    if (battle.status === "completed" || battle.endDate > today) continue;
+    const cScore = battleScoreForMember(
+      battle.challengerMemberId,
+      context.store,
+      battle.startDate,
+      battle.endDate,
+    );
+    const oScore = battleScoreForMember(
+      battle.opponentMemberId,
+      context.store,
+      battle.startDate,
+      battle.endDate,
+    );
+    battle.status = "completed";
+    if (cScore === oScore) {
+      battle.winnerMemberId = undefined;
+    } else {
+      battle.winnerMemberId = cScore > oScore ? battle.challengerMemberId : battle.opponentMemberId;
+    }
   }
 
   await writeStore(context.store, context.normalizedGymId);
