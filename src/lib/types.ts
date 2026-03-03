@@ -118,6 +118,11 @@ export interface DietMeal {
   items: string[];
 }
 
+export interface DietDayPlan {
+  day: string;
+  meals: DietMeal[];
+}
+
 export interface MemberProgram {
   id: string;
   memberId: string;
@@ -127,6 +132,7 @@ export interface MemberProgram {
   proteinTargetG: number;
   waterTargetGlasses: number;
   dietMeals: DietMeal[];
+  dietDays?: DietDayPlan[];
   updatedAt: string;
 }
 

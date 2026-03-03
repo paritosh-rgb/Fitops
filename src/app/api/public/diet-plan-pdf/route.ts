@@ -73,9 +73,16 @@ export async function GET(request: NextRequest) {
     ? store.trainers.find((row) => row.id === member.assignedTrainerId)?.name
     : undefined;
   const memberProgram = store.memberPrograms.find((row) => row.memberId === member.id);
-  const dietMeals = memberProgram?.dietMeals?.length
-    ? memberProgram.dietMeals
-    : DIET_LINES.map((row) => ({ title: row.title, items: row.text.split(",").map((x) => x.trim()) }));
+  const dayIndex = (() => {
+    const day = new Date().getDay();
+    return day === 0 ? 6 : day - 1;
+  })();
+  const dayName = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][dayIndex];
+  const dietMeals =
+    memberProgram?.dietDays?.find((row) => row.day.toLowerCase() === dayName.toLowerCase())?.meals ??
+    (memberProgram?.dietMeals?.length
+      ? memberProgram.dietMeals
+      : DIET_LINES.map((row) => ({ title: row.title, items: row.text.split(",").map((x) => x.trim()) })));
   const calorieTarget = memberProgram?.calorieTarget ?? 2200;
   const proteinTargetG = memberProgram?.proteinTargetG ?? 130;
   const waterTargetGlasses = memberProgram?.waterTargetGlasses ?? 12;
@@ -84,6 +91,7 @@ export async function GET(request: NextRequest) {
     `Member: ${member.name} (${member.memberCode})`,
     `Trainer: ${trainerName ?? "Not assigned"}`,
     `Date: ${new Date().toISOString().slice(0, 10)}`,
+    `Day: ${dayName}`,
     "",
     ...dietMeals.map((meal) => `${meal.title}: ${meal.items.join(", ")}`),
     `Water target: ${waterTargetGlasses} glasses`,

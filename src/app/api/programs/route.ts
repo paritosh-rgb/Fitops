@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { makeId, readStore, writeStore } from "@/lib/store";
-import type { DietMeal, ProgramDay } from "@/lib/types";
+import type { DietDayPlan, DietMeal, ProgramDay } from "@/lib/types";
 
 export async function GET() {
   const store = await readStore();
@@ -16,6 +16,7 @@ export async function POST(request: NextRequest) {
     proteinTargetG?: number;
     waterTargetGlasses?: number;
     dietMeals?: DietMeal[];
+    dietDays?: DietDayPlan[];
   };
 
   if (!body.memberId) {
@@ -42,12 +43,23 @@ export async function POST(request: NextRequest) {
       (meal) => Boolean(meal.title?.trim()) && Array.isArray(meal.items) && meal.items.length > 0,
     ) ?? [];
 
+  const validDietDays =
+    body.dietDays
+      ?.map((day) => ({
+        day: day.day?.trim() ?? "",
+        meals:
+          day.meals?.filter(
+            (meal) => Boolean(meal.title?.trim()) && Array.isArray(meal.items) && meal.items.length > 0,
+          ) ?? [],
+      }))
+      .filter((day) => day.day && day.meals.length > 0) ?? [];
+
   if (validWorkoutDays.length === 0) {
     return NextResponse.json({ error: "At least one workout day is required" }, { status: 400 });
   }
 
-  if (validDietMeals.length === 0) {
-    return NextResponse.json({ error: "At least one diet meal is required" }, { status: 400 });
+  if (validDietMeals.length === 0 && validDietDays.length === 0) {
+    return NextResponse.json({ error: "At least one diet meal/day is required" }, { status: 400 });
   }
 
   const now = new Date().toISOString();
@@ -73,6 +85,13 @@ export async function POST(request: NextRequest) {
       title: meal.title.trim(),
       items: meal.items.map((item) => item.trim()).filter(Boolean),
     }));
+    existing.dietDays = validDietDays.map((day) => ({
+      day: day.day,
+      meals: day.meals.map((meal) => ({
+        title: meal.title.trim(),
+        items: meal.items.map((item) => item.trim()).filter(Boolean),
+      })),
+    }));
     existing.updatedAt = now;
   } else {
     store.memberPrograms.push({
@@ -90,6 +109,13 @@ export async function POST(request: NextRequest) {
       dietMeals: validDietMeals.map((meal) => ({
         title: meal.title.trim(),
         items: meal.items.map((item) => item.trim()).filter(Boolean),
+      })),
+      dietDays: validDietDays.map((day) => ({
+        day: day.day,
+        meals: day.meals.map((meal) => ({
+          title: meal.title.trim(),
+          items: meal.items.map((item) => item.trim()).filter(Boolean),
+        })),
       })),
       updatedAt: now,
     });

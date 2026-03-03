@@ -11,6 +11,12 @@ interface CheckInClientProps {
 
 type RewardTarget = 7 | 15 | 30;
 
+function todayWeekdayName(): string {
+  const day = new Date().getDay();
+  const index = day === 0 ? 6 : day - 1;
+  return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][index];
+}
+
 interface MemberStatus {
   gymName: string;
   member: {
@@ -48,11 +54,13 @@ interface MemberStatus {
     };
   };
   diet: {
+    day: string;
     calorieTarget: number;
     proteinTargetG: number;
     waterTargetGlasses: number;
     todayWaterGlasses: number;
     meals: Array<{ title: string; items: string[] }>;
+    weeklyPlan: Array<{ day: string; mealCount: number; meals?: Array<{ title: string; items: string[] }> }>;
     pdfUrl: string;
   };
   rewards: {
@@ -74,6 +82,9 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [statusData, setStatusData] = useState<MemberStatus | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [activeModule, setActiveModule] = useState<"renewals" | "workout">("workout");
+  const [selectedDietDay, setSelectedDietDay] = useState(todayWeekdayName());
 
   async function loadStatus(showSuccessToast = true) {
     const normalizedMemberId = memberId.trim();
@@ -98,6 +109,7 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
       }
 
       setStatusData(payload);
+      setSelectedDietDay(payload.diet.day);
       if (showSuccessToast) {
         showToast("Member status loaded", "info");
       }
@@ -141,6 +153,7 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
 
       if (payload.status) {
         setStatusData(payload.status);
+        setSelectedDietDay(payload.status.diet.day);
       } else {
         await loadStatus(false);
       }
@@ -195,15 +208,34 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
 
   function shareDietPlan() {
     if (!statusData) return;
-    const meals = statusData.diet.meals
+    const preview = selectedDietPlan(statusData);
+    const meals = preview.meals
       .map((meal) => `${meal.title}: ${meal.items.join(", ")}`)
       .join("\n");
     const text = [
       `My diet plan from ${statusData.gymName}:`,
+      `Day: ${preview.day}`,
       `Calories: ${statusData.diet.calorieTarget} | Protein: ${statusData.diet.proteinTargetG}g`,
       meals,
     ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  }
+
+  function selectedDietPlan(data: MemberStatus): {
+    day: string;
+    meals: Array<{ title: string; items: string[] }>;
+  } {
+    if (selectedDietDay === data.diet.day) {
+      return { day: data.diet.day, meals: data.diet.meals };
+    }
+
+    const dayData = data.diet.weeklyPlan.find((row) => row.day === selectedDietDay);
+    return { day: selectedDietDay, meals: dayData?.meals ?? [] };
+  }
+
+  function switchModule(moduleId: "renewals" | "workout") {
+    setActiveModule(moduleId);
+    setMenuOpen(false);
   }
 
   async function checkIn(event: FormEvent<HTMLFormElement>) {
@@ -285,142 +317,233 @@ export default function CheckInClient({ token, gymId, initialMemberId = "" }: Ch
       {statusData ? (
         <section className="member-status-panel">
           <div className="member-status-head">
-            <h2>{statusData.member.name}</h2>
-            <span className={`status-pill ${statusData.payment.latestStatus}`}>
-              {statusData.payment.latestStatus}
+            <div>
+              <h2>{statusData.member.name}</h2>
+              <p className="member-subhead">
+                {statusData.member.memberCode} | {statusData.membership?.planName ?? "No active plan"}
+              </p>
+            </div>
+            <div className="status-head-actions">
+              <span className={`status-pill ${statusData.payment.latestStatus}`}>
+                {statusData.payment.latestStatus}
+              </span>
+              <button
+                type="button"
+                className="status-hamburger"
+                aria-label="Open module menu"
+                onClick={() => setMenuOpen((x) => !x)}
+              >
+                ☰
+              </button>
+            </div>
+          </div>
+
+          <div className="member-glance-row">
+            <span className="member-glance-chip">
+              Streak: {statusData.attendance.streakDays} days
+            </span>
+            <span className="member-glance-chip">
+              Visits (30d): {statusData.attendance.visitsLast30Days}
+            </span>
+            <span className="member-glance-chip">
+              Dues: Rs {statusData.payment.pendingDuesInr.toLocaleString("en-IN")}
             </span>
           </div>
 
-          <div className="member-feature-grid member-two-modules">
-            <article className="member-feature-card renewals-module">
-              <h3>Renewals Module</h3>
-              <div className="member-kpi-grid">
-                <article>
-                  <p>Plan</p>
-                  <strong>{statusData.membership?.planName ?? "Not active"}</strong>
-                </article>
-                <article>
-                  <p>Expiry</p>
-                  <strong>{statusData.membership?.expiryDate ?? "-"}</strong>
-                </article>
-                <article>
-                  <p>Days Left</p>
-                  <strong>{statusData.membership?.daysToExpiry ?? "-"}</strong>
-                </article>
-                <article>
-                  <p>Pending Dues</p>
-                  <strong>Rs {statusData.payment.pendingDuesInr.toLocaleString("en-IN")}</strong>
-                </article>
-              </div>
-              <p className="member-reco">{statusData.recommendation}</p>
-              <p className="muted">
-                Last visit: {statusData.attendance.lastVisitDate ?? "No check-in yet"} | Status:{" "}
-                {statusData.payment.latestStatus}
-              </p>
-              <button type="button" className="renew-btn" onClick={shareRenewalRequest}>
-                Renew / Ask for Help on WhatsApp
+          {menuOpen ? (
+            <div className="status-hamburger-menu">
+              <button type="button" onClick={() => switchModule("renewals")}>
+                Renewals Module
               </button>
-            </article>
+              <button type="button" onClick={() => switchModule("workout")}>
+                Workout Plan Module
+              </button>
+            </div>
+          ) : null}
+          <div className="module-switch-pills">
+            <button
+              type="button"
+              className={`module-pill ${activeModule === "workout" ? "active" : ""}`}
+              onClick={() => switchModule("workout")}
+            >
+              Workout Plan
+            </button>
+            <button
+              type="button"
+              className={`module-pill ${activeModule === "renewals" ? "active" : ""}`}
+              onClick={() => switchModule("renewals")}
+            >
+              Renewals
+            </button>
+          </div>
 
-            <article className="member-feature-card workout-feature">
-              <div className="section-head">
-                <h3>Workout Plan Module</h3>
-                <span className="status-pill low">{statusData.workout.today.completionPct}% done</span>
-              </div>
-              <p className="muted">
-                {statusData.workout.today.day}: {statusData.workout.today.focus} | Trainer:{" "}
-                {statusData.trainerName ?? "Unassigned"}
-              </p>
-              <div className="exercise-list">
-                {statusData.workout.today.exercises.map((exercise) => (
-                  <button
-                    key={exercise.name}
-                    type="button"
-                    className={`exercise-btn ${exercise.completed ? "done" : ""}`}
-                    disabled={busy || actionBusy}
-                    onClick={() => toggleExercise(exercise.name)}
+          <div className="member-feature-grid member-two-modules">
+            {activeModule === "renewals" ? (
+              <article id="renewals-module" className="member-feature-card renewals-module">
+                <h3>Renewals Module</h3>
+                <p className="module-caption">Track expiry, dues and renewal action in one place.</p>
+                <div className="member-kpi-grid">
+                  <article>
+                    <p>Plan</p>
+                    <strong>{statusData.membership?.planName ?? "Not active"}</strong>
+                  </article>
+                  <article>
+                    <p>Expiry</p>
+                    <strong>{statusData.membership?.expiryDate ?? "-"}</strong>
+                  </article>
+                  <article>
+                    <p>Days Left</p>
+                    <strong>{statusData.membership?.daysToExpiry ?? "-"}</strong>
+                  </article>
+                  <article>
+                    <p>Pending Dues</p>
+                    <strong>Rs {statusData.payment.pendingDuesInr.toLocaleString("en-IN")}</strong>
+                  </article>
+                </div>
+                <p className="member-reco">{statusData.recommendation}</p>
+                <p className="muted">
+                  Last visit: {statusData.attendance.lastVisitDate ?? "No check-in yet"} | Status:{" "}
+                  {statusData.payment.latestStatus}
+                </p>
+                <button type="button" className="renew-btn" onClick={shareRenewalRequest}>
+                  Renew / Ask for Help on WhatsApp
+                </button>
+              </article>
+            ) : null}
+
+            {activeModule === "workout" ? (
+              <article id="workout-module" className="member-feature-card workout-feature">
+                <div className="section-head">
+                  <h3>Workout Plan Module</h3>
+                  <span className="status-pill low">{statusData.workout.today.completionPct}% done</span>
+                </div>
+                <p className="module-caption">Daily training tasks, diet targets and reward progress.</p>
+                <p className="muted">
+                  {statusData.workout.today.day}: {statusData.workout.today.focus} | Trainer:{" "}
+                  {statusData.trainerName ?? "Unassigned"}
+                </p>
+                <div className="exercise-list">
+                  {statusData.workout.today.exercises.map((exercise) => (
+                    <button
+                      key={exercise.name}
+                      type="button"
+                      className={`exercise-btn ${exercise.completed ? "done" : ""}`}
+                      disabled={busy || actionBusy}
+                      onClick={() => toggleExercise(exercise.name)}
+                    >
+                      {exercise.completed ? "✓" : "○"} {exercise.name}
+                    </button>
+                  ))}
+                </div>
+                <p className="member-reco">{statusData.workout.today.trainerNote}</p>
+                <div className="split-chip-row">
+                  {statusData.workout.weeklySplit.map((split) => (
+                    <span key={split.day} className="split-chip">
+                      {split.day.slice(0, 3)}: {split.focus}
+                    </span>
+                  ))}
+                </div>
+
+                <h4>Diet Plan</h4>
+                <div className="diet-day-switch">
+                  <p className="muted">Preview day</p>
+                  <select
+                    value={selectedDietDay}
+                    onChange={(e) => setSelectedDietDay(e.target.value)}
                   >
-                    {exercise.completed ? "✓" : "○"} {exercise.name}
+                    {statusData.diet.weeklyPlan.map((day) => (
+                      <option key={day.day} value={day.day}>
+                        {day.day}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div className="diet-kpi-row">
+                  <span>Calories: {statusData.diet.calorieTarget}</span>
+                  <span>Protein: {statusData.diet.proteinTargetG}g</span>
+                  <span>Water: {statusData.diet.todayWaterGlasses}/{statusData.diet.waterTargetGlasses}</span>
+                </div>
+                <div className="split-chip-row">
+                  {statusData.diet.weeklyPlan.map((day) => (
+                    <span
+                      key={day.day}
+                      className={`split-chip ${day.day === selectedDietDay ? "active-day-chip" : ""}`}
+                    >
+                      {day.day.slice(0, 3)}: {day.mealCount} meals
+                    </span>
+                  ))}
+                </div>
+                <div className="water-actions">
+                  <button
+                    type="button"
+                    className="mini-btn"
+                    disabled={busy || actionBusy}
+                    onClick={() => setWater(Math.max(0, statusData.diet.todayWaterGlasses - 1))}
+                  >
+                    -1 Glass
                   </button>
-                ))}
-              </div>
-              <p className="member-reco">{statusData.workout.today.trainerNote}</p>
-              <div className="split-chip-row">
-                {statusData.workout.weeklySplit.map((split) => (
-                  <span key={split.day} className="split-chip">
-                    {split.day.slice(0, 3)}: {split.focus}
-                  </span>
-                ))}
-              </div>
-
-              <h4>Diet Plan</h4>
-              <div className="diet-kpi-row">
-                <span>Calories: {statusData.diet.calorieTarget}</span>
-                <span>Protein: {statusData.diet.proteinTargetG}g</span>
-                <span>Water: {statusData.diet.todayWaterGlasses}/{statusData.diet.waterTargetGlasses}</span>
-              </div>
-              <div className="water-actions">
-                <button
-                  type="button"
-                  className="mini-btn"
-                  disabled={busy || actionBusy}
-                  onClick={() => setWater(Math.max(0, statusData.diet.todayWaterGlasses - 1))}
-                >
-                  -1 Glass
-                </button>
-                <button
-                  type="button"
-                  className="mini-btn"
-                  disabled={busy || actionBusy}
-                  onClick={() =>
-                    setWater(
-                      Math.min(statusData.diet.waterTargetGlasses, statusData.diet.todayWaterGlasses + 1),
-                    )
-                  }
-                >
-                  +1 Glass
-                </button>
-              </div>
-              <div className="diet-actions">
-                <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">
-                  Download PDF
-                </a>
-                <button type="button" className="mini-btn secondary-btn" onClick={shareDietPlan}>
-                  Share Plan
-                </button>
-              </div>
-
-              <h4>Streak Rewards</h4>
-              <p className="muted">Current streak: {statusData.rewards.currentStreak} days</p>
-              <div className="streak-track">
-                <div
-                  className="streak-fill"
-                  style={{ width: `${Math.min(100, Math.round((statusData.rewards.currentStreak / 30) * 100))}%` }}
-                />
-              </div>
-              <div className="reward-list">
-                {statusData.rewards.milestones.map((milestone) => (
-                  <div key={milestone.target} className="reward-item">
-                    <div>
-                      <strong>{milestone.target}-day reward</strong>
-                      <p>{milestone.rewardLabel}</p>
+                  <button
+                    type="button"
+                    className="mini-btn"
+                    disabled={busy || actionBusy}
+                    onClick={() =>
+                      setWater(
+                        Math.min(statusData.diet.waterTargetGlasses, statusData.diet.todayWaterGlasses + 1),
+                      )
+                    }
+                  >
+                    +1 Glass
+                  </button>
+                </div>
+                <div className="meal-list">
+                  {selectedDietPlan(statusData).meals.map((meal) => (
+                    <div key={meal.title} className="meal-item">
+                      <h4>{meal.title}</h4>
+                      <p>{meal.items.join(" | ")}</p>
                     </div>
-                    {milestone.claimed ? (
-                      <span className="status-pill paid">Claimed</span>
-                    ) : (
-                      <button
-                        type="button"
-                        className="mini-btn"
-                        disabled={busy || actionBusy || !milestone.unlocked}
-                        onClick={() => claimReward(milestone.target)}
-                      >
-                        {milestone.unlocked ? "Claim" : "Locked"}
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </article>
+                  ))}
+                </div>
+                <div className="diet-actions">
+                  <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">
+                    Download PDF
+                  </a>
+                  <button type="button" className="mini-btn secondary-btn" onClick={shareDietPlan}>
+                    Share Plan
+                  </button>
+                </div>
+
+                <h4>Streak Rewards</h4>
+                <p className="muted">Current streak: {statusData.rewards.currentStreak} days</p>
+                <div className="streak-track">
+                  <div
+                    className="streak-fill"
+                    style={{ width: `${Math.min(100, Math.round((statusData.rewards.currentStreak / 30) * 100))}%` }}
+                  />
+                </div>
+                <div className="reward-list">
+                  {statusData.rewards.milestones.map((milestone) => (
+                    <div key={milestone.target} className="reward-item">
+                      <div>
+                        <strong>{milestone.target}-day reward</strong>
+                        <p>{milestone.rewardLabel}</p>
+                      </div>
+                      {milestone.claimed ? (
+                        <span className="status-pill paid">Claimed</span>
+                      ) : (
+                        <button
+                          type="button"
+                          className="mini-btn"
+                          disabled={busy || actionBusy || !milestone.unlocked}
+                          onClick={() => claimReward(milestone.target)}
+                        >
+                          {milestone.unlocked ? "Claim" : "Locked"}
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </article>
+            ) : null}
           </div>
         </section>
       ) : null}

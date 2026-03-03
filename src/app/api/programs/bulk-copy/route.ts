@@ -50,6 +50,13 @@ export async function POST(request: NextRequest) {
         title: meal.title,
         items: [...meal.items],
       }));
+      existing.dietDays = sourceProgram.dietDays?.map((day) => ({
+        day: day.day,
+        meals: day.meals.map((meal) => ({
+          title: meal.title,
+          items: [...meal.items],
+        })),
+      }));
       existing.updatedAt = now;
     } else {
       store.memberPrograms.push({
@@ -67,6 +74,13 @@ export async function POST(request: NextRequest) {
         dietMeals: sourceProgram.dietMeals.map((meal) => ({
           title: meal.title,
           items: [...meal.items],
+        })),
+        dietDays: sourceProgram.dietDays?.map((day) => ({
+          day: day.day,
+          meals: day.meals.map((meal) => ({
+            title: meal.title,
+            items: [...meal.items],
+          })),
         })),
         updatedAt: now,
       });

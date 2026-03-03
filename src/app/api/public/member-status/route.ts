@@ -72,6 +72,10 @@ function workoutIndexForToday(): number {
   return day === 0 ? 6 : day - 1;
 }
 
+function dayNameForIndex(index: number): string {
+  return WEEKLY_WORKOUT[index]?.day ?? WEEKLY_WORKOUT[0].day;
+}
+
 function getRewardTarget(raw: unknown): RewardTarget | null {
   const value = Number(raw);
   if (value === 7 || value === 15 || value === 30) return value;
@@ -128,11 +132,22 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
   const effectiveWorkout = memberProgram?.workoutDays?.length
     ? memberProgram.workoutDays
     : WEEKLY_WORKOUT;
-  const effectiveDietMeals = memberProgram?.dietMeals?.length
-    ? memberProgram.dietMeals
-    : DAILY_DIET_PLAN.meals;
+  const effectiveDietDays = memberProgram?.dietDays?.length
+    ? memberProgram.dietDays
+    : WEEKLY_WORKOUT.map((day) => ({
+        day: day.day,
+        meals:
+          memberProgram?.dietMeals?.length
+            ? memberProgram.dietMeals
+            : DAILY_DIET_PLAN.meals,
+      }));
   const todayIso = isoToday();
-  const workoutPlan = effectiveWorkout[workoutIndexForToday()] ?? effectiveWorkout[0];
+  const todayIndex = workoutIndexForToday();
+  const workoutPlan = effectiveWorkout[todayIndex] ?? effectiveWorkout[0];
+  const todayDayName = dayNameForIndex(todayIndex);
+  const todayDietPlan =
+    effectiveDietDays.find((row) => row.day.toLowerCase() === todayDayName.toLowerCase()) ??
+    effectiveDietDays[0];
   const workoutLog = store.workoutLogs.find(
     (row) => row.memberId === member.id && row.date === todayIso,
   );
@@ -199,7 +214,13 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
       proteinTargetG: memberProgram?.proteinTargetG ?? DAILY_DIET_PLAN.proteinTargetG,
       waterTargetGlasses: memberProgram?.waterTargetGlasses ?? DAILY_DIET_PLAN.waterTargetGlasses,
       todayWaterGlasses,
-      meals: effectiveDietMeals,
+      day: todayDietPlan?.day ?? todayDayName,
+      meals: todayDietPlan?.meals ?? DAILY_DIET_PLAN.meals,
+      weeklyPlan: effectiveDietDays.map((row) => ({
+        day: row.day,
+        mealCount: row.meals.length,
+        meals: row.meals,
+      })),
       pdfUrl: `/api/public/diet-plan-pdf?memberId=${encodeURIComponent(member.memberCode)}&token=${encodeURIComponent(token)}&gymId=${encodeURIComponent(gymId)}`,
     },
     rewards: {

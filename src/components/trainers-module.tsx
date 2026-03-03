@@ -27,14 +27,17 @@ const WEEK_DAYS = [
 function defaultProgramDraft() {
   return {
     workoutDays: WEEK_DAYS.map((day) => ({ day, focus: "", exercisesText: "" })),
+    dietDays: WEEK_DAYS.map((day) => ({
+      day,
+      breakfast: "",
+      lunch: "",
+      evening: "",
+      dinner: "",
+    })),
     trainerNote: "",
     calorieTarget: 2200,
     proteinTargetG: 130,
     waterTargetGlasses: 12,
-    breakfast: "",
-    lunch: "",
-    evening: "",
-    dinner: "",
   };
 }
 
@@ -42,7 +45,12 @@ function buildDraftFromProgram(program?: MemberProgram) {
   if (!program) return defaultProgramDraft();
 
   const dayMap = new Map(program.workoutDays.map((row) => [row.day.toLowerCase(), row]));
-  const mealMap = new Map(program.dietMeals.map((row) => [row.title.toLowerCase(), row.items.join(", ")]));
+  const dietDayMap = new Map(
+    (program.dietDays ?? []).map((row) => [row.day.toLowerCase(), row]),
+  );
+  const fallbackMealMap = new Map(
+    (program.dietMeals ?? []).map((row) => [row.title.toLowerCase(), row.items.join(", ")]),
+  );
   return {
     workoutDays: WEEK_DAYS.map((day) => {
       const current = dayMap.get(day.toLowerCase());
@@ -52,14 +60,21 @@ function buildDraftFromProgram(program?: MemberProgram) {
         exercisesText: current?.exercises.join(", ") ?? "",
       };
     }),
+    dietDays: WEEK_DAYS.map((day) => {
+      const row = dietDayMap.get(day.toLowerCase());
+      const mealMap = new Map((row?.meals ?? []).map((meal) => [meal.title.toLowerCase(), meal.items.join(", ")]));
+      return {
+        day,
+        breakfast: mealMap.get("breakfast") ?? fallbackMealMap.get("breakfast") ?? "",
+        lunch: mealMap.get("lunch") ?? fallbackMealMap.get("lunch") ?? "",
+        evening: mealMap.get("evening") ?? fallbackMealMap.get("evening") ?? "",
+        dinner: mealMap.get("dinner") ?? fallbackMealMap.get("dinner") ?? "",
+      };
+    }),
     trainerNote: program.trainerNote ?? "",
     calorieTarget: program.calorieTarget,
     proteinTargetG: program.proteinTargetG,
     waterTargetGlasses: program.waterTargetGlasses,
-    breakfast: mealMap.get("breakfast") ?? "",
-    lunch: mealMap.get("lunch") ?? "",
-    evening: mealMap.get("evening") ?? "",
-    dinner: mealMap.get("dinner") ?? "",
   };
 }
 
@@ -180,12 +195,17 @@ export default function TrainersModule({
       }))
       .filter((row) => row.focus && row.exercises.length > 0);
 
-    const dietMeals = [
-      { title: "Breakfast", items: programDraft.breakfast.split(",").map((item) => item.trim()).filter(Boolean) },
-      { title: "Lunch", items: programDraft.lunch.split(",").map((item) => item.trim()).filter(Boolean) },
-      { title: "Evening", items: programDraft.evening.split(",").map((item) => item.trim()).filter(Boolean) },
-      { title: "Dinner", items: programDraft.dinner.split(",").map((item) => item.trim()).filter(Boolean) },
-    ].filter((meal) => meal.items.length > 0);
+    const dietDays = programDraft.dietDays
+      .map((row) => ({
+        day: row.day,
+        meals: [
+          { title: "Breakfast", items: row.breakfast.split(",").map((item) => item.trim()).filter(Boolean) },
+          { title: "Lunch", items: row.lunch.split(",").map((item) => item.trim()).filter(Boolean) },
+          { title: "Evening", items: row.evening.split(",").map((item) => item.trim()).filter(Boolean) },
+          { title: "Dinner", items: row.dinner.split(",").map((item) => item.trim()).filter(Boolean) },
+        ].filter((meal) => meal.items.length > 0),
+      }))
+      .filter((row) => row.meals.length > 0);
 
     try {
       setBusy(true);
@@ -197,7 +217,7 @@ export default function TrainersModule({
         calorieTarget: programDraft.calorieTarget,
         proteinTargetG: programDraft.proteinTargetG,
         waterTargetGlasses: programDraft.waterTargetGlasses,
-        dietMeals,
+        dietDays,
       });
       showToast("Member workout & diet template saved", "success");
       window.location.reload();
@@ -373,36 +393,61 @@ export default function TrainersModule({
           ))}
         </div>
 
-        <h3>Diet Template</h3>
+        <h3>Day-wise Diet Template</h3>
         <div className="program-grid">
-          <label>
-            Breakfast (comma separated)
-            <input
-              value={programDraft.breakfast}
-              onChange={(e) => setProgramDraft((x) => ({ ...x, breakfast: e.target.value }))}
-            />
-          </label>
-          <label>
-            Lunch (comma separated)
-            <input
-              value={programDraft.lunch}
-              onChange={(e) => setProgramDraft((x) => ({ ...x, lunch: e.target.value }))}
-            />
-          </label>
-          <label>
-            Evening (comma separated)
-            <input
-              value={programDraft.evening}
-              onChange={(e) => setProgramDraft((x) => ({ ...x, evening: e.target.value }))}
-            />
-          </label>
-          <label>
-            Dinner (comma separated)
-            <input
-              value={programDraft.dinner}
-              onChange={(e) => setProgramDraft((x) => ({ ...x, dinner: e.target.value }))}
-            />
-          </label>
+          {programDraft.dietDays.map((row, index) => (
+            <div className="program-day-card" key={row.day}>
+              <p>{row.day}</p>
+              <input
+                placeholder="Breakfast (comma separated)"
+                value={row.breakfast}
+                onChange={(e) =>
+                  setProgramDraft((x) => ({
+                    ...x,
+                    dietDays: x.dietDays.map((day, dayIndex) =>
+                      dayIndex === index ? { ...day, breakfast: e.target.value } : day,
+                    ),
+                  }))
+                }
+              />
+              <input
+                placeholder="Lunch (comma separated)"
+                value={row.lunch}
+                onChange={(e) =>
+                  setProgramDraft((x) => ({
+                    ...x,
+                    dietDays: x.dietDays.map((day, dayIndex) =>
+                      dayIndex === index ? { ...day, lunch: e.target.value } : day,
+                    ),
+                  }))
+                }
+              />
+              <input
+                placeholder="Evening (comma separated)"
+                value={row.evening}
+                onChange={(e) =>
+                  setProgramDraft((x) => ({
+                    ...x,
+                    dietDays: x.dietDays.map((day, dayIndex) =>
+                      dayIndex === index ? { ...day, evening: e.target.value } : day,
+                    ),
+                  }))
+                }
+              />
+              <input
+                placeholder="Dinner (comma separated)"
+                value={row.dinner}
+                onChange={(e) =>
+                  setProgramDraft((x) => ({
+                    ...x,
+                    dietDays: x.dietDays.map((day, dayIndex) =>
+                      dayIndex === index ? { ...day, dinner: e.target.value } : day,
+                    ),
+                  }))
+                }
+              />
+            </div>
+          ))}
         </div>
 
         <button type="submit" disabled={busy || !programMemberId}>
