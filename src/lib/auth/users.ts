@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { dbClient, ensureDbSchema, isDbEnabled } from "@/lib/db";
+import { dbClient, DB_TABLES, ensureDbSchema, isDbEnabled } from "@/lib/db";
 import type { UserRole } from "@/lib/auth/rbac";
 import { envGymId, normalizeGymId } from "@/lib/tenant";
 
@@ -21,9 +21,9 @@ async function readUsers(): Promise<AuthUser[]> {
     try {
       await ensureDbSchema();
       const sql = dbClient();
-      const rows = await sql<AuthUser[]>`
-        select username, password, role, gym_id as "gymId" from fitops_users
-      `;
+      const rows = await sql.unsafe<AuthUser[]>(
+        `select username, password, role, gym_id as "gymId" from ${DB_TABLES.users}`,
+      );
       return rows.map((user) => ({
         username: user.username ?? "",
         password: user.password ?? "",
@@ -71,13 +71,14 @@ async function writeUsers(users: AuthUser[]): Promise<void> {
     try {
       await ensureDbSchema();
       const sql = dbClient();
-      await sql`delete from fitops_users`;
+      await sql.unsafe(`delete from ${DB_TABLES.users}`);
 
       for (const user of users) {
-        await sql`
-          insert into fitops_users (username, password, role, gym_id)
-          values (${user.username}, ${user.password}, ${user.role}, ${user.gymId})
-        `;
+        await sql.unsafe(
+          `insert into ${DB_TABLES.users} (username, password, role, gym_id)
+           values ($1, $2, $3, $4)`,
+          [user.username, user.password, user.role, user.gymId],
+        );
       }
       return;
     } catch {
@@ -111,11 +112,12 @@ export async function registerUser(username: string, password: string, role: Use
     try {
       await ensureDbSchema();
       const sql = dbClient();
-      await sql`
-        insert into fitops_users (username, password, role, gym_id)
-        values (${username}, ${password}, ${role}, ${gymId})
-        on conflict (username) do nothing
-      `;
+      await sql.unsafe(
+        `insert into ${DB_TABLES.users} (username, password, role, gym_id)
+         values ($1, $2, $3, $4)
+         on conflict (username) do nothing`,
+        [username, password, role, gymId],
+      );
       return;
     } catch {
       // Fall through to runtime file for degraded mode.
@@ -138,11 +140,12 @@ export async function registerUserWithGym(
     try {
       await ensureDbSchema();
       const sql = dbClient();
-      await sql`
-        insert into fitops_users (username, password, role, gym_id)
-        values (${username}, ${password}, ${role}, ${gymId})
-        on conflict (username) do nothing
-      `;
+      await sql.unsafe(
+        `insert into ${DB_TABLES.users} (username, password, role, gym_id)
+         values ($1, $2, $3, $4)
+         on conflict (username) do nothing`,
+        [username, password, role, gymId],
+      );
       return;
     } catch {
       // Fall through to runtime file for degraded mode.

@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { parseSessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/session";
-import { dbClient, ensureDbSchema, isDbEnabled } from "@/lib/db";
+import { dbClient, DB_TABLES, ensureDbSchema, isDbEnabled } from "@/lib/db";
 import { GymStore, Plan } from "@/lib/types";
 import { envGymId, gymStoreKey, normalizeGymId } from "@/lib/tenant";
 
@@ -97,9 +97,10 @@ export async function readStore(explicitGymId?: string): Promise<GymStore> {
     try {
       await ensureDbSchema();
       const sql = dbClient();
-      const rows = await sql<{ payload: unknown }[]>`
-        select payload from fitops_store where key = ${key} limit 1
-      `;
+      const rows = await sql.unsafe<{ payload: unknown }[]>(
+        `select payload from ${DB_TABLES.store} where key = $1 limit 1`,
+        [key],
+      );
 
       if (rows.length > 0 && rows[0]?.payload) {
         const payload = rows[0].payload;
@@ -110,12 +111,13 @@ export async function readStore(explicitGymId?: string): Promise<GymStore> {
       }
 
       const fallback = await readStoreFromFiles(gymId);
-      const fallbackPayload = fallback as unknown as Parameters<typeof sql.json>[0];
-      await sql`
-        insert into fitops_store (key, payload)
-        values (${key}, ${sql.json(fallbackPayload)})
-        on conflict (key) do update set payload = excluded.payload, updated_at = now()
-      `;
+      const fallbackPayload = JSON.stringify(fallback);
+      await sql.unsafe(
+        `insert into ${DB_TABLES.store} (key, payload)
+         values ($1, $2::jsonb)
+         on conflict (key) do update set payload = excluded.payload, updated_at = now()`,
+        [key, fallbackPayload],
+      );
 
       return fallback;
     } catch {
@@ -148,12 +150,13 @@ export async function writeStore(store: GymStore, explicitGymId?: string): Promi
     try {
       await ensureDbSchema();
       const sql = dbClient();
-      const storePayload = store as unknown as Parameters<typeof sql.json>[0];
-      await sql`
-        insert into fitops_store (key, payload)
-        values (${key}, ${sql.json(storePayload)})
-        on conflict (key) do update set payload = excluded.payload, updated_at = now()
-      `;
+      const storePayload = JSON.stringify(store);
+      await sql.unsafe(
+        `insert into ${DB_TABLES.store} (key, payload)
+         values ($1, $2::jsonb)
+         on conflict (key) do update set payload = excluded.payload, updated_at = now()`,
+        [key, storePayload],
+      );
       return;
     } catch {
       // Fall through to runtime file for degraded mode.
