@@ -369,6 +369,19 @@ export default function LandingPage() {
         "Reactivations from miss-you flows: 6",
         "Avg streak growth: +3.1 days",
       ];
+  const kpiVisual = lang === "hi"
+    ? {
+        title: "लाइव रेवेन्यू मोमेंटम",
+        cardA: "रिन्यूअल कन्वर्ज़न",
+        cardB: "ड्यू रिकवरी प्रगति",
+        cardC: "मेंबर एंगेजमेंट पल्स",
+      }
+    : {
+        title: "Live Revenue Momentum",
+        cardA: "Renewal Conversion",
+        cardB: "Dues Recovery Progress",
+        cardC: "Member Engagement Pulse",
+      };
 
   useEffect(() => {
     const pulseTimer = window.setInterval(() => setPulseTick((x) => x + 1), 3500);
@@ -497,6 +510,34 @@ export default function LandingPage() {
           {[...kpiRail, ...kpiRail].map((item, index) => (
             <span key={`${item}-${index}`}>{item}</span>
           ))}
+        </div>
+        <div className="landing-kpi-visual" aria-hidden="true">
+          <div className="kpi-visual-main">
+            <p>{kpiVisual.title}</p>
+            <div className="kpi-visual-bars">
+              <span style={{ height: "36%" }} />
+              <span style={{ height: "54%" }} />
+              <span style={{ height: "46%" }} />
+              <span style={{ height: "71%" }} />
+              <span style={{ height: "64%" }} />
+              <span style={{ height: "79%" }} />
+              <span style={{ height: "86%" }} />
+            </div>
+          </div>
+          <div className="kpi-visual-cards">
+            <article>
+              <strong>{kpiVisual.cardA}</strong>
+              <div className="kpi-line"><i style={{ width: "72%" }} /></div>
+            </article>
+            <article>
+              <strong>{kpiVisual.cardB}</strong>
+              <div className="kpi-line"><i style={{ width: "64%" }} /></div>
+            </article>
+            <article>
+              <strong>{kpiVisual.cardC}</strong>
+              <div className="kpi-line"><i style={{ width: "88%" }} /></div>
+            </article>
+          </div>
         </div>
       </section>
 
