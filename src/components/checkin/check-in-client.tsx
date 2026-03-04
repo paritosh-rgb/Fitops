@@ -63,6 +63,7 @@ interface MemberStatus {
     proteinTargetG: number;
     waterTargetGlasses: number;
     todayWaterGlasses: number;
+    consumedMealTitles: string[];
     meals: Array<{ title: string; items: string[] }>;
     weeklyPlan: Array<{ day: string; mealCount: number; meals?: Array<{ title: string; items: string[] }> }>;
     pdfUrl: string;
@@ -270,6 +271,17 @@ export default function CheckInClient({
         glasses,
       },
       "Water tracker updated",
+    );
+  }
+
+  async function setMeal(title: string, consumed: boolean) {
+    await runMemberAction(
+      {
+        action: "set_meal",
+        mealTitle: title,
+        consumed,
+      },
+      consumed ? `${title} marked eaten` : `${title} marked pending`,
     );
   }
 
@@ -696,6 +708,20 @@ export default function CheckInClient({
                       <span>
                         Water: {statusData.diet.todayWaterGlasses}/{statusData.diet.waterTargetGlasses}
                       </span>
+                      {(() => {
+                        const selected = selectedDietPlan(statusData);
+                        const consumedSet = new Set(
+                          statusData.diet.consumedMealTitles.map((title) => title.toLowerCase()),
+                        );
+                        const doneCount = selected.meals.filter((meal) =>
+                          consumedSet.has(meal.title.toLowerCase()),
+                        ).length;
+                        return (
+                          <span>
+                            Meals: {doneCount}/{selected.meals.length || 0}
+                          </span>
+                        );
+                      })()}
                     </div>
                     <div className="split-chip-row">
                       {statusData.diet.weeklyPlan.map((day) => (
@@ -730,12 +756,32 @@ export default function CheckInClient({
                       </button>
                     </div>
                     <div className="meal-list">
-                      {selectedDietPlan(statusData).meals.map((meal) => (
-                        <div key={meal.title} className="meal-item">
-                          <h4>{meal.title}</h4>
+                      {selectedDietPlan(statusData).meals.map((meal) => {
+                        const todayDiet = selectedDietDay === statusData.diet.day;
+                        const consumed = statusData.diet.consumedMealTitles
+                          .map((title) => title.toLowerCase())
+                          .includes(meal.title.toLowerCase());
+                        return (
+                        <div key={meal.title} className={`meal-item ${consumed ? "done" : ""}`}>
+                          <div className="meal-head-row">
+                            <h4>{meal.title}</h4>
+                            {todayDiet ? (
+                              <button
+                                type="button"
+                                className={`mini-btn meal-log-btn ${consumed ? "secondary-btn" : ""}`}
+                                disabled={busy || actionBusy}
+                                onClick={() => setMeal(meal.title, !consumed)}
+                              >
+                                {consumed ? "Undo" : "Mark Eaten"}
+                              </button>
+                            ) : (
+                              <span className="status-pill medium">Preview only</span>
+                            )}
+                          </div>
                           <p>{meal.items.join(" | ")}</p>
                         </div>
-                      ))}
+                        );
+                      })}
                     </div>
                     <div className="diet-actions">
                       <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">

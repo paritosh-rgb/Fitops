@@ -157,6 +157,8 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
   const completionPct = Math.round((completedCount / workoutExercises.length) * 100);
   const hydration = store.hydrationLogs.find((row) => row.memberId === member.id && row.date === today);
   const todayWaterGlasses = hydration?.glasses ?? 0;
+  const mealLog = store.mealLogs.find((row) => row.memberId === member.id && row.date === today);
+  const consumedMealTitles = mealLog?.consumedMealTitles ?? [];
   const claims = store.rewardClaims.filter((row) => row.memberId === member.id);
   const twin = gymTwinProfile(member.id, store);
   const credits = creditsBalance(member.id, store);
@@ -231,6 +233,7 @@ function buildMemberStatusPayload(store: GymStore, member: Member, token: string
       proteinTargetG: memberProgram?.proteinTargetG ?? DAILY_DIET_PLAN.proteinTargetG,
       waterTargetGlasses: memberProgram?.waterTargetGlasses ?? DAILY_DIET_PLAN.waterTargetGlasses,
       todayWaterGlasses,
+      consumedMealTitles,
       day: todayDietPlan?.day ?? todayDayName,
       meals: todayDietPlan?.meals ?? DAILY_DIET_PLAN.meals,
       weeklyPlan: effectiveDietDays.map((row) => ({
@@ -315,9 +318,11 @@ export async function POST(request: NextRequest) {
     memberId?: string;
     token?: string;
     gymId?: string;
-    action?: "toggle_exercise" | "set_water" | "claim_reward" | "create_battle" | "redeem_sweat";
+    action?: "toggle_exercise" | "set_water" | "set_meal" | "claim_reward" | "create_battle" | "redeem_sweat";
     exerciseName?: string;
     glasses?: number;
+    mealTitle?: string;
+    consumed?: boolean;
     target?: number;
     opponentMemberCode?: string;
     redemptionCode?: "pt_15" | "supp_100";
@@ -404,6 +409,33 @@ export async function POST(request: NextRequest) {
       });
     }
     message = `Water intake set to ${glasses} glasses`;
+  } else if (body.action === "set_meal") {
+    const mealTitle = body.mealTitle?.trim();
+    if (!mealTitle) {
+      return NextResponse.json({ error: "mealTitle is required" }, { status: 400 });
+    }
+    const consumed = Boolean(body.consumed);
+    let log = context.store.mealLogs.find(
+      (row) => row.memberId === context.member.id && row.date === today,
+    );
+    if (!log) {
+      log = {
+        id: makeId("meal"),
+        memberId: context.member.id,
+        date: today,
+        consumedMealTitles: [],
+      };
+      context.store.mealLogs.push(log);
+    }
+    const normalized = mealTitle.toLowerCase();
+    const current = new Set(log.consumedMealTitles.map((title) => title.toLowerCase()));
+    if (consumed) {
+      current.add(normalized);
+    } else {
+      current.delete(normalized);
+    }
+    log.consumedMealTitles = Array.from(current);
+    message = consumed ? `${mealTitle} marked eaten` : `${mealTitle} marked pending`;
   } else if (body.action === "claim_reward") {
     const target = getRewardTarget(body.target);
     if (!target) {

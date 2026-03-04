@@ -106,6 +106,13 @@ export interface HydrationLog {
   glasses: number;
 }
 
+export interface MealLog {
+  id: string;
+  memberId: string;
+  date: string;
+  consumedMealTitles: string[];
+}
+
 export interface RewardClaim {
   id: string;
   memberId: string;
@@ -181,6 +188,7 @@ export interface GymStore {
   expenses: Expense[];
   workoutLogs: WorkoutLog[];
   hydrationLogs: HydrationLog[];
+  mealLogs: MealLog[];
   rewardClaims: RewardClaim[];
   memberPrograms: MemberProgram[];
   sweatCreditEvents: SweatCreditEvent[];
