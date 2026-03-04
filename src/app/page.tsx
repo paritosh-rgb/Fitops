@@ -47,7 +47,21 @@ const modules = [
   "Owner Expense Ledger",
 ];
 
-const comparisonRows = [
+type ComparisonStatus = "yes" | "partial" | "no";
+
+interface ComparisonCell {
+  label: string;
+  status: ComparisonStatus;
+}
+
+interface ComparisonRow {
+  feature: string;
+  sheets: ComparisonCell;
+  other: ComparisonCell;
+  fitops: ComparisonCell;
+}
+
+const comparisonRows: ComparisonRow[] = [
   {
     feature: "Renewal reminders (WhatsApp)",
     sheets: { label: "Manual", status: "no" },
@@ -86,7 +100,7 @@ const comparisonRows = [
   },
 ];
 
-function statusIcon(status: "yes" | "partial" | "no"): string {
+function statusIcon(status: ComparisonStatus): string {
   if (status === "yes") return "✓";
   if (status === "partial") return "~";
   return "✕";
