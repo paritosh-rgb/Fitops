@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { DueReminder } from "@/lib/reminders/dues";
 import { useToast } from "@/components/ui/toast-provider";
 
@@ -17,6 +18,7 @@ interface SendAllResponse {
 
 export default function DuesReminderPanel({ reminders }: DuesReminderPanelProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -37,7 +39,7 @@ export default function DuesReminderPanel({ reminders }: DuesReminderPanelProps)
       const text = `Sent ${payload.sent ?? 0}, Failed ${payload.failed ?? 0}`;
       setStatus(text);
       showToast(text, payload.failed ? "info" : "success");
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to send reminders";
       setError(message);

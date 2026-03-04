@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Expense, Payment } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 
@@ -32,6 +33,7 @@ async function postJson(url: string, body: Record<string, unknown>) {
 
 export default function OwnerModule(props: OwnerModuleProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -83,7 +85,7 @@ export default function OwnerModule(props: OwnerModuleProps) {
       setError(null);
       await postJson("/api/expenses", expenseForm);
       showToast("Expense saved", "success");
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);

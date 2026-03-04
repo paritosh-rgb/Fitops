@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { AttendanceLog, Member, Membership, Plan, Trainer } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 
@@ -43,6 +44,7 @@ export default function MembersModule({
   trainers,
 }: MembersModuleProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const effectivePlans = plans.length > 0 ? plans : FALLBACK_PLANS;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -112,7 +114,7 @@ export default function MembersModule({
       setError(null);
       await action();
       showToast(successMessage, "success");
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setBusy(false);
@@ -137,7 +139,7 @@ export default function MembersModule({
       });
       showToast(`Member created. Default portal password: ${portalPassword}`, "success");
       setTimeout(() => {
-        window.location.reload();
+        router.refresh();
       }, 1800);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";

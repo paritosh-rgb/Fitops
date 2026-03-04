@@ -47,6 +47,51 @@ const modules = [
   "Owner Expense Ledger",
 ];
 
+const comparisonRows = [
+  {
+    feature: "Renewal reminders (WhatsApp)",
+    sheets: { label: "Manual", status: "no" },
+    other: { label: "Limited", status: "partial" },
+    fitops: { label: "Automated + smart timing", status: "yes" },
+  },
+  {
+    feature: "Pending dues recovery",
+    sheets: { label: "No flow", status: "no" },
+    other: { label: "Basic tracking", status: "partial" },
+    fitops: { label: "One-click dynamic reminders", status: "yes" },
+  },
+  {
+    feature: "Trainer KPI analytics",
+    sheets: { label: "Not practical", status: "no" },
+    other: { label: "Partial", status: "partial" },
+    fitops: { label: "Revenue + retention view", status: "yes" },
+  },
+  {
+    feature: "QR attendance check-in",
+    sheets: { label: "Not supported", status: "no" },
+    other: { label: "Sometimes add-on", status: "partial" },
+    fitops: { label: "Single QR + member ID flow", status: "yes" },
+  },
+  {
+    feature: "Member portal (workout + diet)",
+    sheets: { label: "Not available", status: "no" },
+    other: { label: "Varies by plan", status: "partial" },
+    fitops: { label: "Built-in", status: "yes" },
+  },
+  {
+    feature: "India-ready pricing",
+    sheets: { label: "Cheap but limited", status: "partial" },
+    other: { label: "Often expensive", status: "no" },
+    fitops: { label: "Tier-2 friendly", status: "yes" },
+  },
+];
+
+function statusIcon(status: "yes" | "partial" | "no"): string {
+  if (status === "yes") return "✓";
+  if (status === "partial") return "~";
+  return "✕";
+}
+
 const faqs = [
   {
     q: "Will this work for non-tech gym staff?",
@@ -95,6 +140,7 @@ export default function LandingPage() {
     ? {
         features: "फीचर्स",
         roi: "आरओआई",
+        compare: "तुलना",
         pricing: "प्राइसिंग",
         modules: "मॉड्यूल्स",
         faq: "प्रश्न",
@@ -108,6 +154,7 @@ export default function LandingPage() {
         viewPricing: "प्राइसिंग देखें",
         testimonials: "जिम ओनर्स क्या कहते हैं",
         pricingTitle: "प्राइसिंग",
+        compareTitle: "Feature Comparison",
         modulesTitle: "मॉड्यूल्स",
         faqTitle: "FAQ",
         whatsappDemo: "WhatsApp डेमो",
@@ -115,6 +162,7 @@ export default function LandingPage() {
     : {
         features: "Features",
         roi: "ROI",
+        compare: "Comparison",
         pricing: "Pricing",
         modules: "Modules",
         faq: "FAQ",
@@ -128,6 +176,7 @@ export default function LandingPage() {
         viewPricing: "View Pricing",
         testimonials: "What Gym Owners Say",
         pricingTitle: "Pricing",
+        compareTitle: "Feature Comparison",
         modulesTitle: "Modules",
         faqTitle: "FAQ",
         whatsappDemo: "WhatsApp Demo",
@@ -279,6 +328,7 @@ export default function LandingPage() {
         <nav className="landing-nav">
           <a href="#features">{t.features}</a>
           <a href="#roi">{t.roi}</a>
+          <a href="#comparison">{t.compare}</a>
           <a href="#pricing">{t.pricing}</a>
           <a href="#modules">{t.modules}</a>
           <a href="#faq">{t.faq}</a>
@@ -427,6 +477,47 @@ export default function LandingPage() {
               <span>{item.metric}</span>
             </article>
           ))}
+        </div>
+      </section>
+
+      <section id="comparison" className="landing-comparison">
+        <h2>{t.compareTitle}</h2>
+        <div className="landing-comparison-wrap">
+          <table className="landing-comparison-table">
+            <thead>
+              <tr>
+                <th>Feature</th>
+                <th>Google Sheets</th>
+                <th>Other Gym Software</th>
+                <th>FitOps</th>
+              </tr>
+            </thead>
+            <tbody>
+              {comparisonRows.map((row) => (
+                <tr key={row.feature}>
+                  <td>{row.feature}</td>
+                  <td>
+                    <span className={`cmp-cell-badge ${row.sheets.status}`}>
+                      <span className="cmp-icon">{statusIcon(row.sheets.status)}</span>
+                      {row.sheets.label}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`cmp-cell-badge ${row.other.status}`}>
+                      <span className="cmp-icon">{statusIcon(row.other.status)}</span>
+                      {row.other.label}
+                    </span>
+                  </td>
+                  <td>
+                    <span className={`cmp-cell-badge ${row.fitops.status}`}>
+                      <span className="cmp-icon">{statusIcon(row.fitops.status)}</span>
+                      {row.fitops.label}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </section>
 

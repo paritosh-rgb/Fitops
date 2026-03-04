@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Lead, Member, Membership, Referral } from "@/lib/types";
 import { useToast } from "@/components/ui/toast-provider";
 
@@ -44,6 +45,7 @@ export default function GrowthModule({
   expiredMembers,
 }: GrowthModuleProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -108,7 +110,7 @@ export default function GrowthModule({
         setStatus(successMessage);
         showToast(successMessage, "success");
       }
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);

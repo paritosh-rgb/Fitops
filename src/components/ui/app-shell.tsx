@@ -94,14 +94,14 @@ export default function AppShell({ gymName, gymId, role, title, subtitle, childr
             .map((link) => {
               const active = pathname === link.href;
               return (
-                <a
+                <Link
                   key={link.href}
                   href={link.href}
                   className={`nav-link ${active ? "active" : ""}`}
                   onClick={closeMenu}
                 >
                   {link.label}
-                </a>
+                </Link>
               );
             })}
           <button

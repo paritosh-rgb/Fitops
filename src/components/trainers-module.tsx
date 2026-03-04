@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/toast-provider";
 import type { Member, MemberProgram, Trainer, TrainerSnapshot } from "@/lib/types";
 import type { UserRole } from "@/lib/auth/rbac";
@@ -107,6 +108,7 @@ export default function TrainersModule({
   programs,
 }: TrainersModuleProps) {
   const { showToast } = useToast();
+  const router = useRouter();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -158,7 +160,7 @@ export default function TrainersModule({
       setError(null);
       await postJson("/api/trainers", { name });
       showToast("Trainer added successfully", "success");
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to add trainer";
       setBusy(false);
@@ -220,7 +222,7 @@ export default function TrainersModule({
         dietDays,
       });
       showToast("Member workout & diet template saved", "success");
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to save member program";
       setBusy(false);
@@ -240,7 +242,7 @@ export default function TrainersModule({
         targetMemberIds: copyTargets,
       })) as { copiedTo?: number };
       showToast(`Program copied to ${result.copiedTo ?? copyTargets.length} members`, "success");
-      window.location.reload();
+      router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to copy program";
       setBusy(false);
