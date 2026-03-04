@@ -645,6 +645,121 @@ th {
   color: #dce7ff;
 }
 
+.landing-trust-strip {
+  border-radius: 16px;
+  padding: 0.8rem 0.9rem;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(117, 255, 221, 0.2), transparent 35%),
+    linear-gradient(135deg, rgba(8, 33, 74, 0.92), rgba(18, 68, 138, 0.9));
+  box-shadow: 0 14px 32px rgba(11, 35, 81, 0.24);
+  display: grid;
+  gap: 0.6rem;
+}
+
+.landing-trust-strip p {
+  margin: 0;
+  color: #daebff;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.landing-trust-logos {
+  display: inline-flex;
+  gap: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.landing-trust-logos span {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.36rem 0.6rem;
+  border-radius: 999px;
+  color: #eef6ff;
+  font-size: 0.82rem;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.12);
+  box-shadow: inset 0 0 0 1px rgba(189, 211, 255, 0.24);
+}
+
+.landing-solution-architecture,
+.landing-how-it-works {
+  border-radius: 18px;
+  padding: 1rem;
+  color: #e8f1ff;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(157, 193, 255, 0.22), transparent 40%),
+    linear-gradient(135deg, rgba(12, 32, 72, 0.94), rgba(19, 74, 148, 0.9));
+  box-shadow: 0 16px 40px rgba(11, 35, 81, 0.3);
+}
+
+.section-headline p {
+  margin: 0;
+  font-size: 0.74rem;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #cfe0ff;
+}
+
+.section-headline h2 {
+  margin: 0.35rem 0 0;
+  font-size: clamp(1.2rem, 2.2vw, 1.8rem);
+  color: #fff;
+}
+
+.solution-grid,
+.how-grid {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.7rem;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.solution-grid article,
+.how-grid article {
+  border-radius: 14px;
+  padding: 0.8rem;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.06));
+  box-shadow: 0 10px 22px rgba(8, 29, 76, 0.2);
+}
+
+.solution-grid h3,
+.how-grid h3 {
+  margin: 0;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.solution-grid ul {
+  margin: 0.55rem 0 0;
+  padding-left: 1rem;
+  display: grid;
+  gap: 0.28rem;
+  color: #d8e8ff;
+  font-size: 0.86rem;
+}
+
+.how-grid span {
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.18rem 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffeaa2;
+  background: rgba(255, 255, 255, 0.13);
+}
+
+.how-grid p {
+  margin: 0.4rem 0 0;
+  color: #dbe9ff;
+  font-size: 0.86rem;
+}
+
 .landing-v2-features {
   display: grid;
   gap: 0.8rem;

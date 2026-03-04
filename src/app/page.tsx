@@ -31,6 +31,56 @@ const featureCards = [
   },
 ];
 
+const trustGyms = [
+  "BodyFit Lucknow",
+  "Iron Temple Kanpur",
+  "Pulse Gym Varanasi",
+  "Apex Fitness Indore",
+  "Alpha Club Jaipur",
+];
+
+const solutionGroups = [
+  {
+    title: "Sales & Follow-ups",
+    points: ["Walk-in lead pipeline", "Auto WhatsApp nudges", "Referral rewards tracker"],
+  },
+  {
+    title: "Retention & Renewals",
+    points: ["Expiry sequences", "Miss-you alerts", "Churn risk flags"],
+  },
+  {
+    title: "Operations & Front Desk",
+    points: ["Single QR check-in", "Pending dues board", "Trainer accountability"],
+  },
+  {
+    title: "Member Experience",
+    points: ["Workout + diet plans", "Streak rewards", "Member portal login"],
+  },
+];
+
+const workflowSteps = [
+  {
+    step: "Step 1",
+    title: "Onboard Your Gym",
+    copy: "Import members, map plans, and assign trainers in one setup flow.",
+  },
+  {
+    step: "Step 2",
+    title: "Automate Follow-ups",
+    copy: "Enable renewal, due, and inactive-member reminders on WhatsApp.",
+  },
+  {
+    step: "Step 3",
+    title: "Track Daily KPIs",
+    copy: "View collections, check-ins, and trainer performance from one dashboard.",
+  },
+  {
+    step: "Step 4",
+    title: "Grow Predictably",
+    copy: "Use referrals, campaigns, and data-backed actions to improve revenue month on month.",
+  },
+];
+
 const pricing = [
   { name: "Starter", price: "₹999/mo", points: "Up to 300 members" },
   { name: "Growth", price: "₹1,499/mo", points: "Up to 800 members + analytics" },
@@ -385,6 +435,34 @@ export default function LandingPage() {
         </div>
       </section>
 
+      <section className="landing-trust-strip" aria-label="Trusted by gyms">
+        <p>{lang === "hi" ? "इन जिम्स द्वारा भरोसा किया गया" : "Trusted by growing gyms across India"}</p>
+        <div className="landing-trust-logos">
+          {[...trustGyms, ...trustGyms].map((gym, idx) => (
+            <span key={`${gym}-${idx}`}>{gym}</span>
+          ))}
+        </div>
+      </section>
+
+      <section id="features" className="landing-solution-architecture">
+        <div className="section-headline">
+          <p>{lang === "hi" ? "पूर्ण राजस्व स्टैक" : "Complete Revenue Stack"}</p>
+          <h2>{lang === "hi" ? "आपके जिम के हर हिस्से के लिए मॉड्यूल" : "Modules for every gym growth lever"}</h2>
+        </div>
+        <div className="solution-grid">
+          {solutionGroups.map((group) => (
+            <article key={group.title}>
+              <h3>{group.title}</h3>
+              <ul>
+                {group.points.map((point) => (
+                  <li key={point}>{point}</li>
+                ))}
+              </ul>
+            </article>
+          ))}
+        </div>
+      </section>
+
       <section className="landing-live-board">
         <article className="landing-spotlight">
           <p>{lang === "hi" ? "लाइव ग्रोथ स्पॉटलाइट" : "Live Growth Spotlight"}</p>
@@ -402,7 +480,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="landing-v2-features">
+      <section className="landing-v2-features">
         {featureCards.map((card) => (
           <article key={card.title} className={card.tone}>
             <h2>{card.title}</h2>
@@ -415,6 +493,22 @@ export default function LandingPage() {
         <div className="kpi-rail-track">
           {[...kpiRail, ...kpiRail].map((item, index) => (
             <span key={`${item}-${index}`}>{item}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-how-it-works">
+        <div className="section-headline">
+          <p>{lang === "hi" ? "कैसे काम करता है" : "How FitOps Works"}</p>
+          <h2>{lang === "hi" ? "4 स्टेप में लाइव जिम ऑपरेशन" : "Go live in 4 practical steps"}</h2>
+        </div>
+        <div className="how-grid">
+          {workflowSteps.map((item) => (
+            <article key={item.step}>
+              <span>{item.step}</span>
+              <h3>{item.title}</h3>
+              <p>{item.copy}</p>
+            </article>
           ))}
         </div>
       </section>
