@@ -522,7 +522,6 @@ th {
   display: grid;
   grid-template-columns: repeat(12, minmax(0, 1fr));
   gap: 1rem;
-  align-items: start;
 }
 
 .span-12 { grid-column: span 12; }
