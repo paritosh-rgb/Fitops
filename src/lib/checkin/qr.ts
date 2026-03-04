@@ -33,8 +33,8 @@ export function getAppBaseUrl(): string {
   return "http://localhost:3000";
 }
 
-export function buildSharedCheckinUrl(gymId: string): string {
-  const base = getAppBaseUrl().replace(/\/$/, "");
+export function buildSharedCheckinUrl(gymId: string, baseUrl?: string): string {
+  const base = (baseUrl || getAppBaseUrl()).replace(/\/$/, "");
   const token = getCheckinToken();
   return `${base}/check-in?token=${encodeURIComponent(token)}&gym=${encodeURIComponent(gymId)}`;
 }

@@ -3,10 +3,11 @@ import { buildSharedCheckinUrl, qrImageUrl } from "@/lib/checkin/qr";
 
 interface QrCheckinModuleProps {
   gymId: string;
+  baseUrl?: string;
 }
 
-export default function QrCheckinModule({ gymId }: QrCheckinModuleProps) {
-  const checkinUrl = buildSharedCheckinUrl(gymId);
+export default function QrCheckinModule({ gymId, baseUrl }: QrCheckinModuleProps) {
+  const checkinUrl = buildSharedCheckinUrl(gymId, baseUrl);
   const imageUrl = qrImageUrl(checkinUrl);
 
   return (
