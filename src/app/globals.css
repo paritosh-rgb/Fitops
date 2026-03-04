@@ -24,6 +24,7 @@ body {
     radial-gradient(circle at 100% 100%, #ffe8cc, transparent 30%),
     var(--background);
   font-family: var(--font-geist), "Segoe UI", sans-serif;
+  overflow-x: hidden;
 }
 
 a {
@@ -2499,23 +2500,54 @@ th {
     grid-column: span 1;
   }
 
+  .landing-v2 {
+    padding: 0.7rem;
+    gap: 0.75rem;
+  }
+
   .landing-brand img {
-    height: 1.7rem;
+    height: 1.55rem;
   }
 
   .landing-topbar {
     grid-template-columns: 1fr;
     justify-items: start;
+    width: 100%;
+    gap: 0.55rem;
+    padding: 0.6rem;
   }
 
   .landing-nav {
-    justify-content: flex-start;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .landing-nav a {
+    font-size: 0.82rem;
+    text-align: center;
+    padding: 0.32rem 0.45rem;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
   }
 
   .landing-auth-actions {
     width: 100%;
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-columns: 1fr;
+    gap: 0.35rem;
+  }
+
+  .landing-auth-actions > * {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .landing-v2-btn.mini,
+  .lang-toggle {
+    width: 100%;
+    justify-content: center;
   }
 
   .landing-growth-extras {
@@ -2538,6 +2570,14 @@ th {
 
   .landing-v2-hero-main {
     grid-template-columns: 1fr;
+  }
+
+  .landing-v2-hero {
+    padding: 1rem;
+  }
+
+  .landing-v2-hero h1 {
+    font-size: clamp(1.55rem, 8vw, 2.05rem);
   }
 
   .demo-strip,
@@ -2583,6 +2623,13 @@ th {
 
   .battle-create-row {
     grid-template-columns: 1fr;
+  }
+
+  .landing-sticky-whatsapp {
+    right: 0.65rem;
+    bottom: 0.65rem;
+    padding: 0.58rem 0.78rem;
+    font-size: 0.85rem;
   }
 }
 
