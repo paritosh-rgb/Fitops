@@ -144,6 +144,22 @@ a {
   opacity: 0.92;
 }
 
+.topbar-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: inherit;
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.sidebar-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  margin-bottom: 0.15rem;
+}
+
 .role-chip {
   margin: 0.45rem 0 0;
   width: fit-content;
@@ -473,8 +489,13 @@ th {
 }
 
 .landing-brand {
-  font-weight: 800;
-  color: #ecf3ff;
+  display: inline-flex;
+  align-items: center;
+}
+
+.landing-brand img {
+  width: auto;
+  height: 2rem;
 }
 
 .landing-nav {
@@ -2393,6 +2414,10 @@ th {
 }
 
 @media (max-width: 760px) {
+  .landing-brand img {
+    height: 1.7rem;
+  }
+
   .landing-topbar {
     grid-template-columns: 1fr;
     justify-items: start;

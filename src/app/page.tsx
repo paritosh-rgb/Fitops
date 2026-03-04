@@ -388,7 +388,9 @@ export default function LandingPage() {
       <div className="landing-motion-orb orb-a" />
       <div className="landing-motion-orb orb-b" />
       <header className="landing-topbar">
-        <Link href="/" className="landing-brand">FitOps</Link>
+        <Link href="/" className="landing-brand" aria-label="FitOps Home">
+          <Image src="/fitops-logo.svg" alt="FitOps" width={180} height={52} priority />
+        </Link>
         <nav className="landing-nav">
           <a href="#features">{t.features}</a>
           <a href="#roi">{t.roi}</a>

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ReactNode, useEffect, useState } from "react";
@@ -71,14 +72,17 @@ export default function AppShell({ gymName, gymId, role, title, subtitle, childr
           <span />
           <span />
         </button>
-        <Link href="/" className="brand-link" onClick={closeMenu}>
-          {gymName}
+        <Link href="/" className="topbar-brand" onClick={closeMenu}>
+          <Image src="/fitops-mark.svg" alt="FitOps" width={26} height={26} />
+          <span>{gymName}</span>
         </Link>
       </header>
 
       <aside className={`sidebar ${menuOpen ? "open" : ""}`}>
         <div className="brand-block">
-          <p className="eyebrow">FitOps</p>
+          <Link href="/" className="sidebar-logo-link" onClick={closeMenu}>
+            <Image src="/fitops-logo.svg" alt="FitOps" width={150} height={42} />
+          </Link>
           <p className="gym-id-chip">Gym ID: {gymId}</p>
           <h2>
             <Link href="/" className="brand-link" onClick={closeMenu}>
