@@ -9,8 +9,16 @@ const geist = Geist({
 });
 
 export const metadata: Metadata = {
-  title: "FitOps",
+  title: {
+    default: "FitOps",
+    template: "%s | FitOps",
+  },
   description: "Revenue growth dashboard for local gyms in India",
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
 };
 
 export default function RootLayout({
