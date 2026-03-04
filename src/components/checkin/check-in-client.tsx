@@ -580,6 +580,80 @@ export default function CheckInClient({
                       {statusData.trainerName ?? "Unassigned"}
                     </p>
                     <span className="status-pill low">{statusData.workout.today.completionPct}% completed</span>
+                    {(() => {
+                      const workoutPct = Math.max(0, Math.min(100, statusData.workout.today.completionPct));
+                      const waterPct = Math.max(
+                        0,
+                        Math.min(
+                          100,
+                          Math.round(
+                            (statusData.diet.todayWaterGlasses / Math.max(1, statusData.diet.waterTargetGlasses)) *
+                              100,
+                          ),
+                        ),
+                      );
+                      const proteinPct = Math.max(
+                        0,
+                        Math.min(100, Math.round((statusData.diet.proteinTargetG / 140) * 100)),
+                      );
+                      const streakPct = Math.max(
+                        0,
+                        Math.min(100, Math.round((statusData.attendance.streakDays / 30) * 100)),
+                      );
+                      const rings = [
+                        {
+                          label: "Workout",
+                          value: `${workoutPct}%`,
+                          sub: `${statusData.workout.today.exercises.filter((row) => row.completed).length}/${statusData.workout.today.exercises.length} done`,
+                          pct: workoutPct,
+                          color: "#2f6cf2",
+                        },
+                        {
+                          label: "Water",
+                          value: `${statusData.diet.todayWaterGlasses}/${statusData.diet.waterTargetGlasses}`,
+                          sub: "Hydration",
+                          pct: waterPct,
+                          color: "#10b981",
+                        },
+                        {
+                          label: "Protein",
+                          value: `${statusData.diet.proteinTargetG}g`,
+                          sub: "Daily target",
+                          pct: proteinPct,
+                          color: "#f97316",
+                        },
+                        {
+                          label: "Streak",
+                          value: `${statusData.attendance.streakDays} days`,
+                          sub: "Consistency",
+                          pct: streakPct,
+                          color: "#a855f7",
+                        },
+                      ] as const;
+
+                      return (
+                        <div className="goal-rings-grid">
+                          {rings.map((ring) => (
+                            <article key={ring.label} className="goal-ring-card">
+                              <div
+                                className="goal-ring"
+                                style={{
+                                  background: `conic-gradient(${ring.color} ${Math.round(ring.pct * 3.6)}deg, rgba(31, 61, 128, 0.14) 0deg)`,
+                                }}
+                                aria-label={`${ring.label} ${ring.pct}%`}
+                              >
+                                <span>{ring.pct}%</span>
+                              </div>
+                              <div>
+                                <p>{ring.label}</p>
+                                <strong>{ring.value}</strong>
+                                <small>{ring.sub}</small>
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      );
+                    })()}
                     <div className="exercise-list">
                       {statusData.workout.today.exercises.map((exercise) => (
                         <button

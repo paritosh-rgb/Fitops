@@ -2218,6 +2218,70 @@ th {
   gap: 0.45rem;
 }
 
+.goal-rings-grid {
+  display: grid;
+  gap: 0.45rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.goal-ring-card {
+  border-radius: 12px;
+  padding: 0.5rem;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.55rem;
+  align-items: center;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(239, 246, 255, 0.86));
+  box-shadow: inset 0 0 0 1px #d9e5ff;
+}
+
+.goal-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+
+.goal-ring::before {
+  content: "";
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: inset 0 0 0 1px #e0ebff;
+}
+
+.goal-ring span {
+  position: absolute;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #1f3d80;
+}
+
+.goal-ring-card p {
+  margin: 0;
+  font-size: 0.77rem;
+  color: #3d568d;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.goal-ring-card strong {
+  display: block;
+  margin-top: 0.1rem;
+  font-size: 0.92rem;
+  color: #1a2c59;
+}
+
+.goal-ring-card small {
+  display: block;
+  margin-top: 0.05rem;
+  color: #5670a2;
+  font-size: 0.74rem;
+}
+
 .exercise-btn {
   text-align: left;
   background: linear-gradient(135deg, #5a6fb8, #748ed8);
@@ -2557,6 +2621,10 @@ th {
 
   .demo-strip,
   .roi-result-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-rings-grid {
     grid-template-columns: 1fr;
   }
 
