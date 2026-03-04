@@ -87,6 +87,7 @@ export default function LandingPage() {
   const { lang, setLang } = useUILanguage();
   const [pulseTick, setPulseTick] = useState(0);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
+  const [tourIndex, setTourIndex] = useState(0);
   const whatsappText = encodeURIComponent(
     "Hi FitOps team, I want a 15-minute demo for my gym.",
   );
@@ -159,6 +160,101 @@ export default function LandingPage() {
         "Smart expiry reminders recovering lost renewals",
         "Trainer-wise revenue and performance tracking",
         "Member portal with workout, diet and rewards",
+      ];
+  const tourItems = lang === "hi"
+    ? [
+        {
+          title: "स्मार्ट रिन्यूअल इंजन",
+          screen: "Renewals",
+          solve: "एक्सपायरी वाले मेंबर्स को समय पर रिमाइंडर, ताकि रिन्यूअल मिस न हो।",
+        },
+        {
+          title: "ड्यू कलेक्शन बोर्ड",
+          screen: "Pending Dues",
+          solve: "पार्टियल पेमेंट और पेंडिंग बैलेंस एक जगह ट्रैक होकर तुरंत रिकवरी होती है।",
+        },
+        {
+          title: "मेंबर पोर्टल मोमेंटम",
+          screen: "Member Portal",
+          solve: "वर्कआउट, डाइट और स्ट्रीक विजिबिलिटी से कंसिस्टेंसी और रिटेंशन बढ़ता है।",
+        },
+        {
+          title: "ट्रेनर परफॉर्मेंस स्नैपशॉट",
+          screen: "Trainers",
+          solve: "हर ट्रेनर का आउटपुट और कन्वर्ज़न मापा जाता है, इंसेंटिव सही होते हैं।",
+        },
+      ]
+    : [
+        {
+          title: "Smart Renewal Engine",
+          screen: "Renewals",
+          solve: "Expiry members get timely reminders so renewals are not missed.",
+        },
+        {
+          title: "Dues Collection Board",
+          screen: "Pending Dues",
+          solve: "Partial payments and pending balances are tracked in one place for faster recovery.",
+        },
+        {
+          title: "Member Portal Momentum",
+          screen: "Member Portal",
+          solve: "Workout, diet and streak visibility improves consistency and retention.",
+        },
+        {
+          title: "Trainer Performance Snapshot",
+          screen: "Trainers",
+          solve: "Trainer-wise output and conversion are measured so incentives stay fair.",
+        },
+      ];
+
+  const caseStudy = lang === "hi"
+    ? {
+        title: "केस स्टडी: BodyFit, Lucknow",
+        before: "पहले",
+        after: "बाद में (60 दिन)",
+        b1: "मैन्युअल रजिस्टर + WhatsApp फॉलोअप",
+        b2: "मासिक रिन्यूअल रिकवरी: 38%",
+        b3: "पेंडिंग ड्यूज: रु 74,000",
+        a1: "ऑटो रिमाइंडर + ड्यू ट्रैकिंग + मेंबर पोर्टल",
+        a2: "मासिक रिन्यूअल रिकवरी: 64%",
+        a3: "पेंडिंग ड्यूज: रु 29,000",
+        timelineTitle: "इम्पैक्ट टाइमलाइन",
+        t1: "Week 1: सदस्य डेटा और प्लान सेटअप",
+        t2: "Week 2: एक्सपायरी और ड्यू WhatsApp फ्लो लाइव",
+        t3: "Week 4: ट्रैनर KPI और मेंबर स्ट्रीक विजिबिलिटी",
+        t4: "Week 8: रिन्यूअल और कलेक्शन दोनों में लगातार वृद्धि",
+      }
+    : {
+        title: "Case Study: BodyFit, Lucknow",
+        before: "Before",
+        after: "After (60 days)",
+        b1: "Manual register + ad-hoc WhatsApp follow-ups",
+        b2: "Monthly renewal recovery: 38%",
+        b3: "Pending dues: Rs 74,000",
+        a1: "Auto reminders + dues tracking + member portal",
+        a2: "Monthly renewal recovery: 64%",
+        a3: "Pending dues: Rs 29,000",
+        timelineTitle: "Impact Timeline",
+        t1: "Week 1: member data and plan setup",
+        t2: "Week 2: expiry + dues WhatsApp flows live",
+        t3: "Week 4: trainer KPI and member streak visibility",
+        t4: "Week 8: consistent uplift in renewals and collections",
+      };
+
+  const kpiRail = lang === "hi"
+    ? [
+        "आज रिन्यूअल रिकवरी: +22%",
+        "ड्यू कलेक्शन: रु 18,400",
+        "लाइव चेक-इन: 97",
+        "मिस-यू मैसेज से री-एक्टिवेशन: 6",
+        "औसत स्ट्रीक ग्रोथ: +3.1 दिन",
+      ]
+    : [
+        "Renewal recovery today: +22%",
+        "Dues collected: Rs 18,400",
+        "Live check-ins: 97",
+        "Reactivations from miss-you flows: 6",
+        "Avg streak growth: +3.1 days",
       ];
 
   useEffect(() => {
@@ -249,6 +345,73 @@ export default function LandingPage() {
             <p>{card.copy}</p>
           </article>
         ))}
+      </section>
+
+      <section className="landing-kpi-rail" aria-label="Live KPI rail">
+        <div className="kpi-rail-track">
+          {[...kpiRail, ...kpiRail].map((item, index) => (
+            <span key={`${item}-${index}`}>{item}</span>
+          ))}
+        </div>
+      </section>
+
+      <section className="landing-tour" id="tour">
+        <article className="landing-tour-nav">
+          <h2>{lang === "hi" ? "इंटरएक्टिव प्रोडक्ट टूर" : "Interactive Product Tour"}</h2>
+          <p>
+            {lang === "hi"
+              ? "किसी भी मॉड्यूल पर क्लिक करें और देखें कि वह क्या समस्या हल करता है।"
+              : "Click a module and instantly see what problem it solves."}
+          </p>
+          <div className="tour-btn-grid">
+            {tourItems.map((item, index) => (
+              <button
+                key={item.screen}
+                type="button"
+                className={`tour-btn ${tourIndex === index ? "active" : ""}`}
+                onClick={() => setTourIndex(index)}
+              >
+                {item.screen}
+              </button>
+            ))}
+          </div>
+        </article>
+        <article className="landing-tour-preview">
+          <p>{lang === "hi" ? "चयनित मॉड्यूल" : "Selected Module"}</p>
+          <h3>{tourItems[tourIndex].title}</h3>
+          <p>{tourItems[tourIndex].solve}</p>
+        </article>
+      </section>
+
+      <section className="landing-case-study" id="case-study">
+        <h2>{caseStudy.title}</h2>
+        <div className="case-study-grid">
+          <article>
+            <p className="case-tag">{caseStudy.before}</p>
+            <ul>
+              <li>{caseStudy.b1}</li>
+              <li>{caseStudy.b2}</li>
+              <li>{caseStudy.b3}</li>
+            </ul>
+          </article>
+          <article>
+            <p className="case-tag">{caseStudy.after}</p>
+            <ul>
+              <li>{caseStudy.a1}</li>
+              <li>{caseStudy.a2}</li>
+              <li>{caseStudy.a3}</li>
+            </ul>
+          </article>
+        </div>
+        <div className="case-timeline">
+          <h3>{caseStudy.timelineTitle}</h3>
+          <div className="case-timeline-row">
+            <span>{caseStudy.t1}</span>
+            <span>{caseStudy.t2}</span>
+            <span>{caseStudy.t3}</span>
+            <span>{caseStudy.t4}</span>
+          </div>
+        </div>
       </section>
 
       <LandingGrowthExtras lang={lang} />
