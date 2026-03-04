@@ -369,19 +369,6 @@ export default function LandingPage() {
         "Reactivations from miss-you flows: 6",
         "Avg streak growth: +3.1 days",
       ];
-  const kpiVisual = lang === "hi"
-    ? {
-        title: "लाइव रेवेन्यू मोमेंटम",
-        cardA: "रिन्यूअल कन्वर्ज़न",
-        cardB: "ड्यू रिकवरी प्रगति",
-        cardC: "मेंबर एंगेजमेंट पल्स",
-      }
-    : {
-        title: "Live Revenue Momentum",
-        cardA: "Renewal Conversion",
-        cardB: "Dues Recovery Progress",
-        cardC: "Member Engagement Pulse",
-      };
 
   useEffect(() => {
     const pulseTimer = window.setInterval(() => setPulseTick((x) => x + 1), 3500);
@@ -419,8 +406,7 @@ export default function LandingPage() {
         </div>
       </header>
 
-      <div className="landing-flow">
-      <section className="landing-v2-hero span-12">
+      <section className="landing-v2-hero">
         <div className="landing-v2-hero-main">
           <div className="landing-v2-hero-copy">
             <p className="landing-v2-tag">{t.tag}</p>
@@ -451,7 +437,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-trust-strip span-12" aria-label="Trusted by gyms">
+      <section className="landing-trust-strip" aria-label="Trusted by gyms">
         <p>{lang === "hi" ? "इन जिम्स द्वारा भरोसा किया गया" : "Trusted by growing gyms across India"}</p>
         <div className="landing-trust-logos">
           {[...trustGyms, ...trustGyms].map((gym, idx) => (
@@ -460,7 +446,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="features" className="landing-solution-architecture span-7">
+      <section id="features" className="landing-solution-architecture">
         <div className="section-headline">
           <p>{lang === "hi" ? "पूर्ण राजस्व स्टैक" : "Complete Revenue Stack"}</p>
           <h2>{lang === "hi" ? "आपके जिम के हर हिस्से के लिए मॉड्यूल" : "Modules for every gym growth lever"}</h2>
@@ -479,7 +465,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-live-board span-5">
+      <section className="landing-live-board">
         <article className="landing-spotlight">
           <p>{lang === "hi" ? "लाइव ग्रोथ स्पॉटलाइट" : "Live Growth Spotlight"}</p>
           <h2 key={spotlight[spotlightIndex]} className="spotlight-text">
@@ -496,7 +482,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-v2-features span-5">
+      <section className="landing-v2-features">
         {featureCards.map((card) => (
           <article key={card.title} className={card.tone}>
             <h2>{card.title}</h2>
@@ -505,43 +491,15 @@ export default function LandingPage() {
         ))}
       </section>
 
-      <section className="landing-kpi-rail span-7" aria-label="Live KPI rail">
+      <section className="landing-kpi-rail" aria-label="Live KPI rail">
         <div className="kpi-rail-track">
           {[...kpiRail, ...kpiRail].map((item, index) => (
             <span key={`${item}-${index}`}>{item}</span>
           ))}
         </div>
-        <div className="landing-kpi-visual" aria-hidden="true">
-          <div className="kpi-visual-main">
-            <p>{kpiVisual.title}</p>
-            <div className="kpi-visual-bars">
-              <span style={{ height: "36%" }} />
-              <span style={{ height: "54%" }} />
-              <span style={{ height: "46%" }} />
-              <span style={{ height: "71%" }} />
-              <span style={{ height: "64%" }} />
-              <span style={{ height: "79%" }} />
-              <span style={{ height: "86%" }} />
-            </div>
-          </div>
-          <div className="kpi-visual-cards">
-            <article>
-              <strong>{kpiVisual.cardA}</strong>
-              <div className="kpi-line"><i style={{ width: "72%" }} /></div>
-            </article>
-            <article>
-              <strong>{kpiVisual.cardB}</strong>
-              <div className="kpi-line"><i style={{ width: "64%" }} /></div>
-            </article>
-            <article>
-              <strong>{kpiVisual.cardC}</strong>
-              <div className="kpi-line"><i style={{ width: "88%" }} /></div>
-            </article>
-          </div>
-        </div>
       </section>
 
-      <section className="landing-how-it-works span-12">
+      <section className="landing-how-it-works">
         <div className="section-headline">
           <p>{lang === "hi" ? "कैसे काम करता है" : "How FitOps Works"}</p>
           <h2>{lang === "hi" ? "4 स्टेप में लाइव जिम ऑपरेशन" : "Go live in 4 practical steps"}</h2>
@@ -557,7 +515,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="landing-tour span-7" id="tour">
+      <section className="landing-tour" id="tour">
         <article className="landing-tour-nav">
           <h2>{lang === "hi" ? "इंटरएक्टिव प्रोडक्ट टूर" : "Interactive Product Tour"}</h2>
           <p>
@@ -585,7 +543,7 @@ export default function LandingPage() {
         </article>
       </section>
 
-      <section className="landing-case-study span-5" id="case-study">
+      <section className="landing-case-study" id="case-study">
         <h2>{caseStudy.title}</h2>
         <div className="case-study-grid">
           <article>
@@ -616,11 +574,9 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <div className="span-12">
-        <LandingGrowthExtras lang={lang} />
-      </div>
+      <LandingGrowthExtras lang={lang} />
 
-      <section className="landing-testimonials span-12" id="proof">
+      <section className="landing-testimonials" id="proof">
         <h2>{t.testimonials}</h2>
         <div className="landing-testimonial-grid">
           {testimonials.map((item) => (
@@ -634,7 +590,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="comparison" className="landing-comparison span-12">
+      <section id="comparison" className="landing-comparison">
         <h2>{t.compareTitle}</h2>
         <div className="landing-comparison-wrap">
           <table className="landing-comparison-table">
@@ -675,7 +631,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="pricing" className="landing-pricing span-4">
+      <section id="pricing" className="landing-pricing">
         <h2>{t.pricingTitle}</h2>
         <div className="landing-pricing-grid">
           {pricing.map((plan) => (
@@ -688,7 +644,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="modules" className="landing-modules span-4">
+      <section id="modules" className="landing-modules">
         <h2>{t.modulesTitle}</h2>
         <div className="landing-module-grid">
           {modules.map((item) => (
@@ -697,7 +653,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section id="faq" className="landing-faq span-4">
+      <section id="faq" className="landing-faq">
         <h2>{t.faqTitle}</h2>
         <div className="landing-faq-grid">
           {faqs.map((item) => (
@@ -708,7 +664,6 @@ export default function LandingPage() {
           ))}
         </div>
       </section>
-      </div>
 
       <a
         className="landing-sticky-whatsapp"
