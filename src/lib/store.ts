@@ -2,7 +2,7 @@ import { promises as fs } from "node:fs";
 import path from "node:path";
 import { cookies } from "next/headers";
 import { parseSessionToken, SESSION_COOKIE_NAME } from "@/lib/auth/session";
-import { dbClient, DB_TABLES, ensureDbSchema, isDbEnabled } from "@/lib/db";
+import { dbClient, DB_TABLES, ensureDbSchema, isDbEnabled, markDbFailure } from "@/lib/db";
 import { GymStore, Plan } from "@/lib/types";
 import { envGymId, gymStoreKey, normalizeGymId } from "@/lib/tenant";
 
@@ -125,6 +125,7 @@ export async function readStore(explicitGymId?: string): Promise<GymStore> {
 
       return fallback;
     } catch {
+      markDbFailure();
       return readStoreFromFiles(gymId);
     }
   }
@@ -163,6 +164,7 @@ export async function writeStore(store: GymStore, explicitGymId?: string): Promi
       );
       return;
     } catch {
+      markDbFailure();
       // Fall through to runtime file for degraded mode.
     }
   }

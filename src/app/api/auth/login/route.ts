@@ -6,20 +6,10 @@ import {
   validateEnvCredentials,
 } from "@/lib/auth/session";
 import { getUserByCredentials } from "@/lib/auth/users";
-import { ensureDbSchema, isDbEnabled } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as { username?: string; password?: string };
-
-    if (isDbEnabled()) {
-      try {
-        await ensureDbSchema();
-      } catch (error) {
-        const message = error instanceof Error ? error.message : "Schema init failed";
-        console.error("Schema init error:", message);
-      }
-    }
 
     if (!body.username || !body.password) {
       return NextResponse.json({ error: "username and password are required" }, { status: 400 });

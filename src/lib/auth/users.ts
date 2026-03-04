@@ -1,6 +1,6 @@
 import { promises as fs } from "node:fs";
 import path from "node:path";
-import { dbClient, DB_TABLES, ensureDbSchema, isDbEnabled } from "@/lib/db";
+import { dbClient, DB_TABLES, ensureDbSchema, isDbEnabled, markDbFailure } from "@/lib/db";
 import type { UserRole } from "@/lib/auth/rbac";
 import { envGymId, normalizeGymId } from "@/lib/tenant";
 
@@ -31,6 +31,7 @@ async function readUsers(): Promise<AuthUser[]> {
         gymId: normalizeGymId(user.gymId),
       }));
     } catch {
+      markDbFailure();
       return readUsersFromFiles();
     }
   }
@@ -82,6 +83,7 @@ async function writeUsers(users: AuthUser[]): Promise<void> {
       }
       return;
     } catch {
+      markDbFailure();
       // Fall through to runtime file for degraded mode.
     }
   }
@@ -120,6 +122,7 @@ export async function registerUser(username: string, password: string, role: Use
       );
       return;
     } catch {
+      markDbFailure();
       // Fall through to runtime file for degraded mode.
     }
   }
@@ -148,6 +151,7 @@ export async function registerUserWithGym(
       );
       return;
     } catch {
+      markDbFailure();
       // Fall through to runtime file for degraded mode.
     }
   }
