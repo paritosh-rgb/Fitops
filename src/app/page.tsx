@@ -197,7 +197,6 @@ export default function LandingPage() {
   const [pulseTick, setPulseTick] = useState(0);
   const [spotlightIndex, setSpotlightIndex] = useState(0);
   const [tourIndex, setTourIndex] = useState(0);
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const whatsappText = encodeURIComponent(
     "Hi FitOps team, I want a 15-minute demo for my gym.",
   );
@@ -392,27 +391,18 @@ export default function LandingPage() {
         <Link href="/" className="landing-brand" aria-label="FitOps Home">
           <Image src="/fitops-logo.svg" alt="FitOps" width={180} height={52} priority />
         </Link>
-        <button
-          type="button"
-          className="landing-menu-btn"
-          aria-expanded={mobileNavOpen}
-          aria-label="Toggle menu"
-          onClick={() => setMobileNavOpen((x) => !x)}
-        >
-          {mobileNavOpen ? "Close" : "Menu"}
-        </button>
-        <nav className={`landing-nav ${mobileNavOpen ? "open" : ""}`}>
-          <a href="#features" onClick={() => setMobileNavOpen(false)}>{t.features}</a>
-          <a href="#roi" onClick={() => setMobileNavOpen(false)}>{t.roi}</a>
-          <a href="#comparison" onClick={() => setMobileNavOpen(false)}>{t.compare}</a>
-          <a href="#pricing" onClick={() => setMobileNavOpen(false)}>{t.pricing}</a>
-          <a href="#modules" onClick={() => setMobileNavOpen(false)}>{t.modules}</a>
-          <a href="#faq" onClick={() => setMobileNavOpen(false)}>{t.faq}</a>
+        <nav className="landing-nav">
+          <a href="#features">{t.features}</a>
+          <a href="#roi">{t.roi}</a>
+          <a href="#comparison">{t.compare}</a>
+          <a href="#pricing">{t.pricing}</a>
+          <a href="#modules">{t.modules}</a>
+          <a href="#faq">{t.faq}</a>
         </nav>
-        <div className={`landing-auth-actions ${mobileNavOpen ? "open" : ""}`}>
+        <div className="landing-auth-actions">
           <LanguageToggle lang={lang} onChange={setLang} />
-          <a href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark" onClick={() => setMobileNavOpen(false)}>{t.login}</a>
-          <a href="/signup" className="landing-v2-btn mini primary-dark" onClick={() => setMobileNavOpen(false)}>{t.signup}</a>
+          <a href="/login?next=%2Fdashboard" className="landing-v2-btn mini ghost-dark">{t.login}</a>
+          <a href="/signup" className="landing-v2-btn mini primary-dark">{t.signup}</a>
         </div>
       </header>
 
