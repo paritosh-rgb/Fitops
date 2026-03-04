@@ -13,7 +13,7 @@ interface CheckInClientProps {
 }
 
 type RewardTarget = 7 | 15 | 30;
-type FitnessModule = "today" | "diet" | "twin" | "rewards" | "battles";
+type FitnessModule = "today" | "diet" | "foodlog" | "twin" | "rewards" | "battles";
 
 function todayWeekdayName(): string {
   const day = new Date().getDay();
@@ -564,6 +564,13 @@ export default function CheckInClient({
                   </button>
                   <button
                     type="button"
+                    className={`module-pill ${activeFitnessModule === "foodlog" ? "active" : ""}`}
+                    onClick={() => switchFitnessModule("foodlog")}
+                  >
+                    Food Log
+                  </button>
+                  <button
+                    type="button"
                     className={`module-pill ${activeFitnessModule === "twin" ? "active" : ""}`}
                     onClick={() => switchFitnessModule("twin")}
                   >
@@ -756,32 +763,15 @@ export default function CheckInClient({
                       </button>
                     </div>
                     <div className="meal-list">
-                      {selectedDietPlan(statusData).meals.map((meal) => {
-                        const todayDiet = selectedDietDay === statusData.diet.day;
-                        const consumed = statusData.diet.consumedMealTitles
-                          .map((title) => title.toLowerCase())
-                          .includes(meal.title.toLowerCase());
-                        return (
-                        <div key={meal.title} className={`meal-item ${consumed ? "done" : ""}`}>
+                      {selectedDietPlan(statusData).meals.map((meal) => (
+                        <div key={meal.title} className="meal-item">
                           <div className="meal-head-row">
                             <h4>{meal.title}</h4>
-                            {todayDiet ? (
-                              <button
-                                type="button"
-                                className={`mini-btn meal-log-btn ${consumed ? "secondary-btn" : ""}`}
-                                disabled={busy || actionBusy}
-                                onClick={() => setMeal(meal.title, !consumed)}
-                              >
-                                {consumed ? "Undo" : "Mark Eaten"}
-                              </button>
-                            ) : (
-                              <span className="status-pill medium">Preview only</span>
-                            )}
+                            <span className="status-pill medium">Preview</span>
                           </div>
                           <p>{meal.items.join(" | ")}</p>
                         </div>
-                        );
-                      })}
+                      ))}
                     </div>
                     <div className="diet-actions">
                       <a href={statusData.diet.pdfUrl} target="_blank" rel="noreferrer" className="mini-link-btn">
@@ -790,6 +780,63 @@ export default function CheckInClient({
                       <button type="button" className="mini-btn secondary-btn" onClick={shareDietPlan}>
                         Share Plan
                       </button>
+                    </div>
+                  </section>
+                ) : null}
+
+                {activeFitnessModule === "foodlog" ? (
+                  <section className="fitness-module-panel foodlog-feature">
+                    <h4>Today Food Log</h4>
+                    <p className="muted">
+                      Day: {statusData.diet.day}. Mark each meal after you complete it.
+                    </p>
+                    {(() => {
+                      const consumedSet = new Set(
+                        statusData.diet.consumedMealTitles.map((title) => title.toLowerCase()),
+                      );
+                      const doneCount = statusData.diet.meals.filter((meal) =>
+                        consumedSet.has(meal.title.toLowerCase()),
+                      ).length;
+                      return (
+                        <div className="foodlog-progress">
+                          <strong>
+                            {doneCount}/{statusData.diet.meals.length} meals logged
+                          </strong>
+                          <div className="streak-track">
+                            <div
+                              className="streak-fill"
+                              style={{
+                                width: `${Math.round(
+                                  (doneCount / Math.max(1, statusData.diet.meals.length)) * 100,
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })()}
+                    <div className="meal-list">
+                      {statusData.diet.meals.map((meal) => {
+                        const consumed = statusData.diet.consumedMealTitles
+                          .map((title) => title.toLowerCase())
+                          .includes(meal.title.toLowerCase());
+                        return (
+                          <div key={meal.title} className={`meal-item ${consumed ? "done" : ""}`}>
+                            <div className="meal-head-row">
+                              <h4>{meal.title}</h4>
+                              <button
+                                type="button"
+                                className={`mini-btn meal-log-btn ${consumed ? "secondary-btn" : ""}`}
+                                disabled={busy || actionBusy}
+                                onClick={() => setMeal(meal.title, !consumed)}
+                              >
+                                {consumed ? "Undo" : "Log Meal"}
+                              </button>
+                            </div>
+                            <p>{meal.items.join(" | ")}</p>
+                          </div>
+                        );
+                      })}
                     </div>
                   </section>
                 ) : null}

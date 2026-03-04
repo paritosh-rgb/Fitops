@@ -2207,6 +2207,12 @@ th {
     linear-gradient(180deg, #ffffff, #f5fff9);
 }
 
+.foodlog-feature {
+  background:
+    radial-gradient(circle at 100% 0%, rgba(104, 183, 255, 0.2), transparent 35%),
+    linear-gradient(180deg, #ffffff, #f4f9ff);
+}
+
 .rewards-feature {
   background:
     radial-gradient(circle at 100% 0%, rgba(255, 174, 102, 0.2), transparent 35%),
@@ -2395,6 +2401,11 @@ th {
 .meal-log-btn {
   white-space: nowrap;
   padding: 0.36rem 0.52rem;
+}
+
+.foodlog-progress {
+  display: grid;
+  gap: 0.32rem;
 }
 
 .diet-actions {
