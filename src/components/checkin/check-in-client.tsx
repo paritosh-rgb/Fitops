@@ -14,11 +14,21 @@ interface CheckInClientProps {
 
 type RewardTarget = 7 | 15 | 30;
 type FitnessModule = "today" | "diet" | "foodlog" | "twin" | "rewards" | "battles";
+type TwinStage = "seed" | "rookie" | "core" | "elite" | "titan";
 
 function todayWeekdayName(): string {
   const day = new Date().getDay();
   const index = day === 0 ? 6 : day - 1;
   return ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"][index];
+}
+
+function twinStage(streakDays: number, weeklyScore: number): TwinStage {
+  const consistency = Math.round(streakDays * 2 + weeklyScore * 0.7);
+  if (consistency >= 110) return "titan";
+  if (consistency >= 80) return "elite";
+  if (consistency >= 55) return "core";
+  if (consistency >= 30) return "rookie";
+  return "seed";
 }
 
 interface MemberStatus {
@@ -330,6 +340,34 @@ export default function CheckInClient({
       meals,
     ].join("\n");
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+  }
+
+  async function shareTwinCard() {
+    if (!statusData) return;
+    const consistency = Math.min(
+      100,
+      Math.round(statusData.attendance.streakDays * 2 + statusData.twin.weeklyScore * 0.7),
+    );
+    const text = [
+      `My FitOps Twin this week: ${statusData.twin.avatarLabel} (${statusData.twin.level})`,
+      `Consistency: ${consistency}% | Streak: ${statusData.attendance.streakDays} days`,
+      `Weekly score: ${statusData.twin.weeklyScore}`,
+      `Join me at ${statusData.gymName} and unlock your own Twin evolution.`,
+    ].join("\n");
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: "My FitOps Twin Evolution",
+          text,
+        });
+      } else {
+        window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank", "noopener,noreferrer");
+      }
+      showToast("Twin card ready to share", "success");
+    } catch {
+      // Ignore user-cancelled share.
+    }
   }
 
   function selectedDietPlan(data: MemberStatus): {
@@ -843,6 +881,36 @@ export default function CheckInClient({
 
                 {activeFitnessModule === "twin" ? (
                   <section className="fitness-module-panel">
+                    {(() => {
+                      const stage = twinStage(
+                        statusData.attendance.streakDays,
+                        statusData.twin.weeklyScore,
+                      );
+                      const consistencyPct = Math.min(
+                        100,
+                        Math.round(statusData.attendance.streakDays * 2 + statusData.twin.weeklyScore * 0.7),
+                      );
+                      return (
+                        <div className={`twin-evolution-wrap stage-${stage}`}>
+                          <div className="twin-growth-rail">
+                            <div className="twin-growth-track" />
+                            <div className="twin-growth-fill" style={{ width: `${consistencyPct}%` }} />
+                          </div>
+                          <div className="twin-character" aria-label={`Twin stage ${stage}`}>
+                            <div className="twin-character-aura" style={{ background: statusData.twin.auraColor }} />
+                            <div className="twin-character-body">
+                              <span className="twin-eye left" />
+                              <span className="twin-eye right" />
+                              <span className="twin-core" />
+                            </div>
+                          </div>
+                          <p className="muted small">
+                            Evolution Stage: <strong>{stage.toUpperCase()}</strong> | Consistency{" "}
+                            <strong>{consistencyPct}%</strong>
+                          </p>
+                        </div>
+                      );
+                    })()}
                     <div className="twin-avatar-card">
                       <h4>Gym Twin Avatar</h4>
                       <div className="twin-avatar-meta">
@@ -854,6 +922,9 @@ export default function CheckInClient({
                           </p>
                         </div>
                       </div>
+                      <button type="button" className="mini-btn twin-share-btn" onClick={shareTwinCard}>
+                        Share Twin Card + Refer
+                      </button>
                     </div>
                     <div className="member-kpi-grid">
                       <article>
