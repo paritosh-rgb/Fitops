@@ -115,6 +115,7 @@ export default function GrowthModule({
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       showToast(message, "error");
+    } finally {
       setBusy(false);
     }
   }

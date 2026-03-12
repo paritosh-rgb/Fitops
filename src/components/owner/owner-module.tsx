@@ -90,6 +90,7 @@ export default function OwnerModule(props: OwnerModuleProps) {
       const message = err instanceof Error ? err.message : "Something went wrong";
       setError(message);
       showToast(message, "error");
+    } finally {
       setBusy(false);
     }
   }

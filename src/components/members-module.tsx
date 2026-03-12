@@ -117,9 +117,10 @@ export default function MembersModule({
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      setBusy(false);
       setError(message);
       showToast(message, "error");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -143,9 +144,10 @@ export default function MembersModule({
       }, 1800);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Something went wrong";
-      setBusy(false);
       setError(message);
       showToast(message, "error");
+    } finally {
+      setBusy(false);
     }
   }
 

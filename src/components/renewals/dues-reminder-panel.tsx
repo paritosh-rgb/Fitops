@@ -44,6 +44,7 @@ export default function DuesReminderPanel({ reminders }: DuesReminderPanelProps)
       const message = err instanceof Error ? err.message : "Failed to send reminders";
       setError(message);
       showToast(message, "error");
+    } finally {
       setBusy(false);
     }
   }

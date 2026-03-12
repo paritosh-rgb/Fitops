@@ -163,9 +163,10 @@ export default function TrainersModule({
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to add trainer";
-      setBusy(false);
       setError(message);
       showToast(message, "error");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -225,9 +226,10 @@ export default function TrainersModule({
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to save member program";
-      setBusy(false);
       setError(message);
       showToast(message, "error");
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -245,9 +247,10 @@ export default function TrainersModule({
       router.refresh();
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to copy program";
-      setBusy(false);
       setError(message);
       showToast(message, "error");
+    } finally {
+      setBusy(false);
     }
   }
 
