@@ -25,15 +25,6 @@ create table if not exists public.invoices (
   created_at timestamptz not null default now()
 );
 
-create table if not exists public.portal_otps (
-  id uuid primary key default gen_random_uuid(),
-  email text not null,
-  code_hash text not null,
-  expires_at timestamptz not null,
-  consumed_at timestamptz,
-  created_at timestamptz not null default now()
-);
-
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql

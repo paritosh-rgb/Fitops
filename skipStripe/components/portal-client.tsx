@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useTransition } from "react";
-import { FileDown, Search } from "lucide-react";
+import { useEffect, useState, useTransition } from "react";
+import { useSearchParams } from "next/navigation";
+import { FileDown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -24,18 +25,22 @@ const demoEmails = ["alex@example.com", "priya@example.com"] as const;
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 export function PortalClient() {
-  const [email, setEmail] = useState("");
-  const [otpCode, setOtpCode] = useState("");
+  const searchParams = useSearchParams();
+  const callbackEmail = searchParams.get("email") ?? "";
+  const magicLinkVerified = searchParams.get("verified") === "1";
+  const magicLinkError = searchParams.get("error");
+
+  const [email, setEmail] = useState(callbackEmail);
   const [payments, setPayments] = useState<PortalPayment[]>([]);
   const [status, setStatus] = useState<string | null>(null);
-  const [otpSent, setOtpSent] = useState(false);
-  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(
+    magicLinkVerified && callbackEmail ? callbackEmail : null
+  );
   const [latestInvoiceUrl, setLatestInvoiceUrl] = useState<string | null>(null);
-  const [debugCode, setDebugCode] = useState<string | null>(null);
+  const [debugLink, setDebugLink] = useState<string | null>(null);
   const [forms, setForms] = useState<PortalFormState>({});
-  const [sendingOtp, startSendingOtp] = useTransition();
-  const [verifyingOtp, startVerifyingOtp] = useTransition();
-  const [searching, startSearching] = useTransition();
+  const [sendingLink, startSendingLink] = useTransition();
+  const [, startSearching] = useTransition();
   const [generating, startGenerating] = useTransition();
 
   const isDemoEmail = isDevelopment && demoEmails.includes(email.toLowerCase() as (typeof demoEmails)[number]);
@@ -69,16 +74,24 @@ export function PortalClient() {
     );
   }
 
-  async function requestOtp(event: React.FormEvent<HTMLFormElement>) {
+  useEffect(() => {
+    if (magicLinkVerified && callbackEmail && payments.length === 0) {
+      startSearching(async () => {
+        await loadVerifiedPayments(callbackEmail);
+      });
+    }
+  }, [callbackEmail, magicLinkVerified, payments.length]);
+
+  async function requestMagicLink(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    startSendingOtp(async () => {
+    startSendingLink(async () => {
       setStatus(null);
       setPayments([]);
       setVerifiedEmail(null);
       setLatestInvoiceUrl(null);
-      setDebugCode(null);
+      setDebugLink(null);
 
-      const response = await fetch("/api/portal/request-otp", {
+      const response = await fetch("/api/portal/request-magic-link", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email })
@@ -90,35 +103,8 @@ export function PortalClient() {
         return;
       }
 
-      setOtpSent(true);
-      setDebugCode(data.debugCode ?? null);
-      setStatus(`A verification code was sent to ${email}. Enter it below to unlock invoices.`);
-    });
-  }
-
-  async function verifyOtpAndSearch(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    startVerifyingOtp(async () => {
-      setStatus(null);
-      setLatestInvoiceUrl(null);
-      const response = await fetch("/api/portal/verify-otp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, code: otpCode })
-      });
-      const data = await response.json();
-
-      if (!response.ok) {
-        setStatus(data.error ?? "Failed to verify OTP.");
-        return;
-      }
-
-      setVerifiedEmail(data.email ?? email);
-      setStatus("Email verified. Loading matching payments.");
-
-      startSearching(async () => {
-        await loadVerifiedPayments(email);
-      });
+      setDebugLink(data.debugLink ?? null);
+      setStatus(`A magic link was sent to ${email}. Open it to unlock invoices.`);
     });
   }
 
@@ -164,13 +150,13 @@ export function PortalClient() {
     <div className="space-y-8">
       <Card>
         <CardHeader>
-          <CardTitle>Email verification</CardTitle>
+          <CardTitle>Email magic link</CardTitle>
           <CardDescription>
-            Verify ownership of your email with a one-time code before invoice lookup is allowed.
+            Verify ownership of your email with a Supabase magic link before invoice lookup is allowed.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <form className="flex flex-col gap-4 md:flex-row" onSubmit={requestOtp}>
+          <form className="flex flex-col gap-4 md:flex-row" onSubmit={requestMagicLink}>
             <Input
               type="email"
               placeholder="customer@example.com"
@@ -178,31 +164,19 @@ export function PortalClient() {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
             />
-            <Button disabled={sendingOtp || !email} type="submit">
-              {sendingOtp ? "Sending code..." : "Send OTP"}
+            <Button disabled={sendingLink || !email} type="submit">
+              {sendingLink ? "Sending link..." : "Send magic link"}
             </Button>
           </form>
 
-          {otpSent ? (
-            <form className="flex flex-col gap-4 md:flex-row" onSubmit={verifyOtpAndSearch}>
-              <Input
-                inputMode="numeric"
-                pattern="[0-9]*"
-                placeholder="Enter 6-digit code"
-                required
-                value={otpCode}
-                onChange={(event) => setOtpCode(event.target.value)}
-              />
-              <Button disabled={verifyingOtp || searching || otpCode.length < 6} type="submit">
-                <Search className="mr-2 h-4 w-4" />
-                {verifyingOtp || searching ? "Verifying..." : "Verify and find payments"}
-              </Button>
-            </form>
-          ) : null}
-
-          {isDemoEmail && debugCode ? (
+          {isDemoEmail && debugLink ? (
             <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-              Local demo mode detected. Use verification code <span className="font-semibold">{debugCode}</span>.
+              Local demo mode detected. Open the generated magic link directly:
+              <div className="mt-3">
+                <a className="font-semibold underline" href={debugLink}>
+                  Open demo magic link
+                </a>
+              </div>
             </div>
           ) : null}
 
@@ -212,6 +186,9 @@ export function PortalClient() {
             </div>
           ) : null}
 
+          {magicLinkError ? (
+            <p className="mt-4 text-sm text-red-600">The magic link is invalid or expired. Request a new one.</p>
+          ) : null}
           {status ? <p className="mt-4 text-sm text-slate-700">{status}</p> : null}
           {latestInvoiceUrl ? (
             <Button asChild size="sm" variant="outline">

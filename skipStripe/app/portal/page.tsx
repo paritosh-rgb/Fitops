@@ -7,7 +7,7 @@ export default function PortalPage() {
         <p className="text-sm font-medium uppercase tracking-[0.2em] text-sky-700">Client Portal</p>
         <h1 className="text-4xl font-semibold tracking-tight text-slate-950">Find and download your invoices</h1>
         <p className="max-w-2xl text-slate-600">
-          Verify the checkout email with a one-time code, then review matching payments, add billing
+          Verify the checkout email with a magic link, then review matching payments, add billing
           details, and generate invoice PDFs without contacting support.
         </p>
       </div>

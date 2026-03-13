@@ -10,13 +10,13 @@ function hasSmtpConfig() {
   );
 }
 
-export async function sendPortalOtpEmail(email: string, code: string) {
+export async function sendPortalMagicLinkEmail(email: string, magicLink: string) {
   if (!hasSmtpConfig()) {
     if (process.env.NODE_ENV === "production") {
-      throw new Error("SMTP is not configured for portal OTP delivery");
+      throw new Error("SMTP is not configured for portal magic-link delivery");
     }
 
-    return { delivered: false, debugCode: code };
+    return { delivered: false, debugLink: magicLink };
   }
 
   const nodemailer = await import("nodemailer");
@@ -33,9 +33,9 @@ export async function sendPortalOtpEmail(email: string, code: string) {
   await transporter.sendMail({
     from: serverEnv.SMTP_FROM,
     to: email,
-    subject: "Your Stripe Invoice Portal verification code",
-    text: `Your verification code is ${code}. It expires in 10 minutes.`,
-    html: `<p>Your verification code is <strong>${code}</strong>.</p><p>It expires in 10 minutes.</p>`
+    subject: "Your Stripe Invoice Portal sign-in link",
+    text: `Open this secure link to access your invoices: ${magicLink}`,
+    html: `<p>Open this secure link to access your invoices:</p><p><a href="${magicLink}">${magicLink}</a></p>`
   });
 
   return { delivered: true };

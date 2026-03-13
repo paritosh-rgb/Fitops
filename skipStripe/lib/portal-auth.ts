@@ -6,27 +6,11 @@ import { serverEnv } from "@/lib/env";
 
 const PORTAL_COOKIE_NAME = "portal_session";
 const PORTAL_SESSION_TTL_SECONDS = 60 * 60;
-const PORTAL_OTP_TTL_MINUTES = 10;
 
 type PortalSessionPayload = {
   email: string;
   exp: number;
 };
-
-export function generateOtpCode() {
-  return Math.floor(100000 + Math.random() * 900000).toString();
-}
-
-export function getOtpExpiryIso() {
-  return new Date(Date.now() + PORTAL_OTP_TTL_MINUTES * 60 * 1000).toISOString();
-}
-
-export function hashOtp(email: string, code: string) {
-  return crypto
-    .createHmac("sha256", serverEnv.PORTAL_SIGNING_SECRET)
-    .update(`${email.toLowerCase()}:${code}`)
-    .digest("hex");
-}
 
 function signPortalSession(payload: PortalSessionPayload) {
   const encoded = Buffer.from(JSON.stringify(payload)).toString("base64url");
