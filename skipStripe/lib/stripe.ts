@@ -8,7 +8,7 @@ export function createStripeClient(secretKey: string) {
   });
 }
 
-function mapChargeToPayment(charge: Stripe.Charge): StripePayment | null {
+export function mapChargeToPayment(charge: Stripe.Charge): StripePayment | null {
   const customerEmail = charge.billing_details.email ?? "";
   if (!customerEmail) {
     return null;
@@ -38,7 +38,9 @@ export async function fetchPayments(secretKey: string, email?: string) {
 
 export async function fetchPaymentById(secretKey: string, paymentId: string) {
   const stripe = createStripeClient(secretKey);
-  const charge = await stripe.charges.retrieve(paymentId);
+  const charge = await stripe.charges.retrieve(paymentId, {
+    expand: ["payment_intent", "balance_transaction"]
+  });
   const payment = mapChargeToPayment(charge);
 
   if (!payment) {
@@ -46,4 +48,10 @@ export async function fetchPaymentById(secretKey: string, paymentId: string) {
   }
 
   return payment;
+}
+
+export async function getStripeAccountId(secretKey: string) {
+  const stripe = createStripeClient(secretKey);
+  const account = await stripe.accounts.retrieve();
+  return account.id;
 }

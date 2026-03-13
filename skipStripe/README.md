@@ -46,6 +46,7 @@ cp .env.example .env.local
 - `PORTAL_SIGNING_SECRET`
 - `NEXT_PUBLIC_APP_URL`
 - `SMTP_HOST` / `SMTP_PORT` / `SMTP_USER` / `SMTP_PASS` / `SMTP_FROM` for production magic-link delivery
+- `AUTO_INVOICE_COMPANY_NAME` / `AUTO_INVOICE_COMPANY_ADDRESS` / `AUTO_INVOICE_TAX_ID` for webhook-generated invoices
 
 Notes:
 - `ENCRYPTION_KEY` should be a long random secret.
@@ -69,16 +70,25 @@ npm run dev
 - `/api/portal/request-magic-link` generates a Supabase Auth magic link for the portal email.
 - `/api/portal/magic-link` verifies the token and sets an HTTP-only portal session cookie.
 - `/portal` uses `/api/portal/search` only after that verified portal session is present.
+- `/api/stripe/webhook/[token]` verifies Stripe webhook signatures and auto-generates invoices from `charge.succeeded`.
 
 ## API Routes
 
 - `POST /api/connect-stripe`
 - `GET /api/stripe/payments`
+- `POST /api/stripe/webhook/[token]`
 - `POST /api/invoice/create`
 - `GET /api/invoice/download?invoiceId=...`
 - `POST /api/portal/request-magic-link`
 - `GET /api/portal/magic-link`
 - `POST /api/portal/search`
+
+## Stripe Webhook Auto-Invoicing
+
+1. In the dashboard, save your Stripe key and webhook signing secret.
+2. Copy the generated webhook endpoint URL.
+3. In Stripe Dashboard, add this endpoint and subscribe to `charge.succeeded`.
+4. Every successful charge now triggers automatic invoice creation.
 
 ## Deployment on Vercel
 

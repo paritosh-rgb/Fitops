@@ -5,7 +5,7 @@ export default async function DashboardPage() {
   const { supabase, user } = await requireUser();
   const { data: connection } = await supabase
     .from("stripe_connections")
-    .select("id, created_at")
+    .select("id, created_at, webhook_token, stripe_account_id")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -28,6 +28,8 @@ export default async function DashboardPage() {
       </div>
       <DashboardClient
         hasConnection={Boolean(connection)}
+        stripeAccountId={connection?.stripe_account_id ?? null}
+        webhookToken={connection?.webhook_token ?? null}
         recentInvoices={invoices ?? []}
         userEmail={user.email ?? ""}
       />

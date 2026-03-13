@@ -10,6 +10,9 @@ create table if not exists public.stripe_connections (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null unique references public.users(id) on delete cascade,
   stripe_secret_key text not null,
+  stripe_webhook_secret text,
+  stripe_account_id text,
+  webhook_token text unique,
   created_at timestamptz not null default now()
 );
 
@@ -24,6 +27,9 @@ create table if not exists public.invoices (
   pdf_url text not null,
   created_at timestamptz not null default now()
 );
+
+create unique index if not exists invoices_user_payment_unique
+on public.invoices(user_id, payment_id);
 
 create or replace function public.handle_new_user()
 returns trigger

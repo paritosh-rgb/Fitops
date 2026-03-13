@@ -3,9 +3,8 @@ import { z } from "zod";
 
 import { findDemoPayment, shouldUseDemoPayments } from "@/lib/demo-payments";
 import { getPortalSession } from "@/lib/portal-auth";
-import { createInvoicePdf, generateInvoiceNumber } from "@/lib/invoices";
+import { createInvoiceForPayment } from "@/lib/invoice-service";
 import { verifyPortalPayload, decryptSecret } from "@/lib/crypto";
-import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import { fetchPaymentById } from "@/lib/stripe";
 import type { StripePayment } from "@/lib/types";
@@ -25,61 +24,6 @@ const portalSchema = baseSchema.extend({
   source: z.literal("portal"),
   token: z.string().min(20)
 });
-
-function buildInvoicePayload(payment: StripePayment, input: z.infer<typeof baseSchema>) {
-  return {
-    invoiceNumber: generateInvoiceNumber(),
-    invoiceDate: new Date().toISOString(),
-    companyName: input.companyName,
-    companyAddress: input.companyAddress,
-    taxId: input.taxId,
-    customerName: payment.customerName,
-    customerEmail: payment.customerEmail,
-    amount: payment.amount,
-    currency: payment.currency,
-    paymentId: payment.id,
-    paymentReference: payment.paymentReference,
-    itemDescription: `Stripe payment ${payment.id}`
-  };
-}
-
-async function persistInvoiceRecord(input: {
-  userId: string;
-  invoiceNumber: string;
-  paymentId: string;
-  customerEmail: string;
-  amount: number;
-  currency: string;
-  pdfPath: string;
-}) {
-  const { data: invoice, error } = await supabaseAdmin
-    .from("invoices")
-    .insert({
-      user_id: input.userId,
-      invoice_number: input.invoiceNumber,
-      payment_id: input.paymentId,
-      customer_email: input.customerEmail,
-      amount: input.amount / 100,
-      currency: input.currency,
-      pdf_url: input.pdfPath
-    })
-    .select("id, invoice_number, pdf_url, currency")
-    .single();
-
-  if (!error && invoice) {
-    return invoice;
-  }
-
-  if (process.env.NODE_ENV === "production") {
-    throw error ?? new Error("Failed to save invoice");
-  }
-
-  return {
-    id: `local-${input.invoiceNumber}`,
-    invoice_number: input.invoiceNumber,
-    pdf_url: input.pdfPath
-  };
-}
 
 export async function POST(request: Request) {
   try {
@@ -113,24 +57,14 @@ export async function POST(request: Request) {
         throw new Error("Stripe connection or payment not found");
       }
 
-      const invoicePayload = buildInvoicePayload(payment, input);
-      const upload = await createInvoicePdf(invoicePayload, user.id);
-      const invoice = await persistInvoiceRecord({
-        userId: user.id,
-        invoiceNumber: invoicePayload.invoiceNumber,
-        paymentId: payment.id,
-        customerEmail: payment.customerEmail,
-        amount: payment.amount,
-        currency: payment.currency,
-        pdfPath: upload.path
+      const invoice = await createInvoiceForPayment(user.id, payment, {
+        companyName: input.companyName,
+        companyAddress: input.companyAddress,
+        taxId: input.taxId
       });
 
       return NextResponse.json({
-        invoice: {
-          id: invoice.id,
-          invoiceNumber: invoice.invoice_number,
-          pdfUrl: upload.signedUrl
-        }
+        invoice
       });
     }
 
@@ -139,31 +73,21 @@ export async function POST(request: Request) {
     const payload = verifyPortalPayload<{ userId: string; payment: StripePayment }>(input.token);
 
     if (!portalSession?.email) {
-      return NextResponse.json({ error: "Verify your email with OTP first." }, { status: 401 });
+      return NextResponse.json({ error: "Verify your email with magic link first." }, { status: 401 });
     }
 
     if (portalSession.email.toLowerCase() !== payload.payment.customerEmail.toLowerCase()) {
       return NextResponse.json({ error: "This invoice does not belong to the verified email." }, { status: 403 });
     }
 
-    const invoicePayload = buildInvoicePayload(payload.payment, input);
-    const upload = await createInvoicePdf(invoicePayload, payload.userId);
-    const invoice = await persistInvoiceRecord({
-      userId: payload.userId,
-      invoiceNumber: invoicePayload.invoiceNumber,
-      paymentId: payload.payment.id,
-      customerEmail: payload.payment.customerEmail,
-      amount: payload.payment.amount,
-      currency: payload.payment.currency,
-      pdfPath: upload.path
+    const invoice = await createInvoiceForPayment(payload.userId, payload.payment, {
+      companyName: input.companyName,
+      companyAddress: input.companyAddress,
+      taxId: input.taxId
     });
 
     return NextResponse.json({
-      invoice: {
-        id: invoice.id,
-        invoiceNumber: invoice.invoice_number,
-        pdfUrl: upload.signedUrl
-      }
+      invoice
     });
   } catch (error) {
     return NextResponse.json(

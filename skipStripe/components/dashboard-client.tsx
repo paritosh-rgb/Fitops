@@ -21,6 +21,8 @@ import type { StripePayment } from "@/lib/types";
 
 type Props = {
   hasConnection: boolean;
+  webhookToken: string | null;
+  stripeAccountId: string | null;
   recentInvoices: Array<{
     id: string;
     invoice_number: string;
@@ -46,8 +48,16 @@ const defaultCompany = {
   companyAddress: "123 Market Street\nSan Francisco, CA 94105\nUnited States"
 };
 
-export function DashboardClient({ hasConnection, recentInvoices, userEmail }: Props) {
+export function DashboardClient({
+  hasConnection,
+  webhookToken,
+  stripeAccountId,
+  recentInvoices,
+  userEmail
+}: Props) {
   const [stripeKey, setStripeKey] = useState("");
+  const [webhookSecret, setWebhookSecret] = useState("");
+  const [origin] = useState(() => (typeof window !== "undefined" ? window.location.origin : ""));
   const [companyName, setCompanyName] = useState(defaultCompany.companyName);
   const [companyAddress, setCompanyAddress] = useState(defaultCompany.companyAddress);
   const [taxId, setTaxId] = useState("");
@@ -56,7 +66,10 @@ export function DashboardClient({ hasConnection, recentInvoices, userEmail }: Pr
   const [latestInvoiceUrl, setLatestInvoiceUrl] = useState<string | null>(null);
   const [loadingPayments, startLoadingPayments] = useTransition();
   const [savingKey, startSavingKey] = useTransition();
+  const [savingWebhook, startSavingWebhook] = useTransition();
   const [creatingInvoice, startCreatingInvoice] = useTransition();
+
+  const webhookEndpoint = webhookToken && origin ? `${origin}/api/stripe/webhook/${webhookToken}` : null;
 
   async function loadPayments() {
     startLoadingPayments(async () => {
@@ -88,6 +101,26 @@ export function DashboardClient({ hasConnection, recentInvoices, userEmail }: Pr
         setStripeKey("");
         void loadPayments();
       }
+    });
+  }
+
+  async function handleSaveWebhookSecret(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    startSavingWebhook(async () => {
+      setStatus(null);
+      const response = await fetch("/api/connect-stripe", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ stripeWebhookSecret: webhookSecret })
+      });
+      const data = await response.json();
+      if (!response.ok) {
+        setStatus(data.error ?? "Failed to save webhook secret.");
+        return;
+      }
+
+      setWebhookSecret("");
+      setStatus("Webhook secret saved successfully.");
     });
   }
 
@@ -128,7 +161,7 @@ export function DashboardClient({ hasConnection, recentInvoices, userEmail }: Pr
           <CardHeader>
             <CardTitle>Connect Stripe</CardTitle>
             <CardDescription>
-              Paste a restricted read-only Stripe secret key. It is encrypted before being stored.
+              Paste your restricted read-only Stripe secret key. It is encrypted before being stored.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -138,17 +171,57 @@ export function DashboardClient({ hasConnection, recentInvoices, userEmail }: Pr
                 <Input
                   id="stripeSecretKey"
                   type="password"
-                  placeholder="rk_live_..."
+                  placeholder={hasConnection ? "Update Stripe key (optional)" : "rk_live_..."}
                   value={stripeKey}
                   onChange={(event) => setStripeKey(event.target.value)}
-                  required
+                  required={!hasConnection}
                 />
               </div>
-              <Button disabled={savingKey}>{savingKey ? "Saving..." : "Save Stripe connection"}</Button>
+              <Button disabled={savingKey}>{savingKey ? "Saving..." : hasConnection ? "Update Stripe key" : "Save Stripe connection"}</Button>
             </form>
+
+            {hasConnection ? (
+              <form className="mt-6 space-y-4 border-t pt-6" onSubmit={handleSaveWebhookSecret}>
+                <div className="space-y-2">
+                  <Label htmlFor="webhookSecret">Webhook signing secret</Label>
+                  <Input
+                    id="webhookSecret"
+                    type="password"
+                    placeholder="whsec_..."
+                    value={webhookSecret}
+                    onChange={(event) => setWebhookSecret(event.target.value)}
+                    required
+                  />
+                </div>
+                <Button disabled={savingWebhook} variant="outline">
+                  {savingWebhook ? "Saving..." : "Save webhook secret"}
+                </Button>
+              </form>
+            ) : null}
           </CardContent>
         </Card>
 
+        <Card>
+          <CardHeader>
+            <CardTitle>Stripe webhook</CardTitle>
+            <CardDescription>
+              Configure this endpoint in Stripe and subscribe to <code>charge.succeeded</code> for auto-invoicing.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {webhookEndpoint ? (
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm">
+                <p className="font-medium text-slate-900">Webhook endpoint URL</p>
+                <p className="mt-1 break-all text-slate-700">{webhookEndpoint}</p>
+              </div>
+            ) : (
+              <p className="text-sm text-slate-500">Save your Stripe key first to generate endpoint details.</p>
+            )}
+            {stripeAccountId ? (
+              <p className="text-xs text-slate-500">Connected Stripe account: {stripeAccountId}</p>
+            ) : null}
+          </CardContent>
+        </Card>
         <Card>
           <CardHeader>
             <CardTitle>Invoice defaults</CardTitle>

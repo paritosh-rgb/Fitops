@@ -11,7 +11,7 @@ export async function POST() {
     const portalSession = await getPortalSession();
 
     if (!portalSession?.email) {
-      return NextResponse.json({ error: "Verify your email with OTP first." }, { status: 401 });
+      return NextResponse.json({ error: "Verify your email with magic link first." }, { status: 401 });
     }
 
     const email = portalSession.email.toLowerCase();
