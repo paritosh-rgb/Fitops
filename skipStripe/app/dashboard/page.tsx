@@ -11,7 +11,7 @@ export default async function DashboardPage() {
 
   const { data: invoices } = await supabase
     .from("invoices")
-    .select("id, invoice_number, payment_id, customer_email, amount, pdf_url, created_at")
+    .select("id, invoice_number, payment_id, customer_email, amount, currency, pdf_url, created_at")
     .eq("user_id", user.id)
     .order("created_at", { ascending: false })
     .limit(5);

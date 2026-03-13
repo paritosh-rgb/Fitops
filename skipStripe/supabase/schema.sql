@@ -20,7 +20,17 @@ create table if not exists public.invoices (
   payment_id text not null,
   customer_email text not null,
   amount numeric(12,2) not null,
+  currency text not null default 'usd',
   pdf_url text not null,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists public.portal_otps (
+  id uuid primary key default gen_random_uuid(),
+  email text not null,
+  code_hash text not null,
+  expires_at timestamptz not null,
+  consumed_at timestamptz,
   created_at timestamptz not null default now()
 );
 

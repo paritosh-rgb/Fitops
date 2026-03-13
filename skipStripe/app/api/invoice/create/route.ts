@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 
 import { findDemoPayment, shouldUseDemoPayments } from "@/lib/demo-payments";
+import { getPortalSession } from "@/lib/portal-auth";
 import { createInvoicePdf, generateInvoiceNumber } from "@/lib/invoices";
 import { verifyPortalPayload, decryptSecret } from "@/lib/crypto";
 import { supabaseAdmin } from "@/lib/supabase/admin";
@@ -48,6 +49,7 @@ async function persistInvoiceRecord(input: {
   paymentId: string;
   customerEmail: string;
   amount: number;
+  currency: string;
   pdfPath: string;
 }) {
   const { data: invoice, error } = await supabaseAdmin
@@ -58,9 +60,10 @@ async function persistInvoiceRecord(input: {
       payment_id: input.paymentId,
       customer_email: input.customerEmail,
       amount: input.amount / 100,
+      currency: input.currency,
       pdf_url: input.pdfPath
     })
-    .select("id, invoice_number, pdf_url")
+    .select("id, invoice_number, pdf_url, currency")
     .single();
 
   if (!error && invoice) {
@@ -118,6 +121,7 @@ export async function POST(request: Request) {
         paymentId: payment.id,
         customerEmail: payment.customerEmail,
         amount: payment.amount,
+        currency: payment.currency,
         pdfPath: upload.path
       });
 
@@ -131,7 +135,17 @@ export async function POST(request: Request) {
     }
 
     const input = portalSchema.parse(json);
+    const portalSession = await getPortalSession();
     const payload = verifyPortalPayload<{ userId: string; payment: StripePayment }>(input.token);
+
+    if (!portalSession?.email) {
+      return NextResponse.json({ error: "Verify your email with OTP first." }, { status: 401 });
+    }
+
+    if (portalSession.email.toLowerCase() !== payload.payment.customerEmail.toLowerCase()) {
+      return NextResponse.json({ error: "This invoice does not belong to the verified email." }, { status: 403 });
+    }
+
     const invoicePayload = buildInvoicePayload(payload.payment, input);
     const upload = await createInvoicePdf(invoicePayload, payload.userId);
     const invoice = await persistInvoiceRecord({
@@ -140,6 +154,7 @@ export async function POST(request: Request) {
       paymentId: payload.payment.id,
       customerEmail: payload.payment.customerEmail,
       amount: payload.payment.amount,
+      currency: payload.payment.currency,
       pdfPath: upload.path
     });
 

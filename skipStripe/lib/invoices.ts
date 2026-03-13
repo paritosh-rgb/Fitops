@@ -1,3 +1,4 @@
+import crypto from "crypto";
 import fs from "fs/promises";
 import nodePath from "path";
 
@@ -10,7 +11,7 @@ import { absoluteUrl } from "@/lib/utils";
 
 export function generateInvoiceNumber() {
   const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
-  const suffix = Math.floor(Math.random() * 9000 + 1000);
+  const suffix = crypto.randomUUID().replace(/-/g, "").slice(0, 10).toUpperCase();
   return `SIP-${date}-${suffix}`;
 }
 

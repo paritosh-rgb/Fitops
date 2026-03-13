@@ -27,16 +27,17 @@ type Props = {
     payment_id: string;
     customer_email: string;
     amount: number;
+    currency: string;
     pdf_url: string;
     created_at: string;
   }>;
   userEmail: string;
 };
 
-function formatStoredAmount(amount: number) {
+function formatStoredAmount(amount: number, currency: string) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency: "USD"
+    currency: currency.toUpperCase()
   }).format(amount);
 }
 
@@ -262,7 +263,7 @@ export function DashboardClient({ hasConnection, recentInvoices, userEmail }: Pr
                 <div>
                   <p className="font-medium text-slate-950">{invoice.invoice_number}</p>
                   <p className="text-sm text-slate-600">
-                    {invoice.customer_email} · {formatStoredAmount(invoice.amount)} · {formatDate(invoice.created_at)}
+                    {invoice.customer_email} · {formatStoredAmount(invoice.amount, invoice.currency)} · {formatDate(invoice.created_at)}
                   </p>
                 </div>
                 <Button asChild variant="outline">

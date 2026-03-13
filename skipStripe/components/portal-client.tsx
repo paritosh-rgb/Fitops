@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { createClient } from "@/lib/supabase/browser";
 import { formatDate, formatMoney } from "@/lib/utils";
 import type { PortalPayment } from "@/lib/types";
 
@@ -25,7 +24,6 @@ const demoEmails = ["alex@example.com", "priya@example.com"] as const;
 const isDevelopment = process.env.NODE_ENV !== "production";
 
 export function PortalClient() {
-  const supabase = createClient();
   const [email, setEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
   const [payments, setPayments] = useState<PortalPayment[]>([]);
@@ -33,23 +31,19 @@ export function PortalClient() {
   const [otpSent, setOtpSent] = useState(false);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   const [latestInvoiceUrl, setLatestInvoiceUrl] = useState<string | null>(null);
+  const [debugCode, setDebugCode] = useState<string | null>(null);
   const [forms, setForms] = useState<PortalFormState>({});
   const [sendingOtp, startSendingOtp] = useTransition();
   const [verifyingOtp, startVerifyingOtp] = useTransition();
   const [searching, startSearching] = useTransition();
   const [generating, startGenerating] = useTransition();
 
-  const canUseDemoBypass = isDevelopment && demoEmails.includes(email.toLowerCase() as (typeof demoEmails)[number]);
+  const isDemoEmail = isDevelopment && demoEmails.includes(email.toLowerCase() as (typeof demoEmails)[number]);
 
-  async function loadVerifiedPayments(activeEmail: string, options?: { demoBypass?: boolean }) {
-    const headers: Record<string, string> = { "Content-Type": "application/json" };
-    if (options?.demoBypass) {
-      headers["x-demo-email"] = activeEmail;
-    }
-
+  async function loadVerifiedPayments(activeEmail: string) {
     const response = await fetch("/api/portal/search", {
       method: "POST",
-      headers
+      headers: { "Content-Type": "application/json" }
     });
     const data = await response.json();
 
@@ -82,20 +76,22 @@ export function PortalClient() {
       setPayments([]);
       setVerifiedEmail(null);
       setLatestInvoiceUrl(null);
+      setDebugCode(null);
 
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: {
-          shouldCreateUser: true
-        }
+      const response = await fetch("/api/portal/request-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email })
       });
+      const data = await response.json();
 
-      if (error) {
-        setStatus(error.message);
+      if (!response.ok) {
+        setStatus(data.error ?? "Failed to send OTP.");
         return;
       }
 
       setOtpSent(true);
+      setDebugCode(data.debugCode ?? null);
       setStatus(`A verification code was sent to ${email}. Enter it below to unlock invoices.`);
     });
   }
@@ -105,34 +101,24 @@ export function PortalClient() {
     startVerifyingOtp(async () => {
       setStatus(null);
       setLatestInvoiceUrl(null);
-      const { error } = await supabase.auth.verifyOtp({
-        email,
-        token: otpCode,
-        type: "email"
+      const response = await fetch("/api/portal/verify-otp", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, code: otpCode })
       });
+      const data = await response.json();
 
-      if (error) {
-        setStatus(error.message);
+      if (!response.ok) {
+        setStatus(data.error ?? "Failed to verify OTP.");
         return;
       }
 
-      setVerifiedEmail(email);
+      setVerifiedEmail(data.email ?? email);
       setStatus("Email verified. Loading matching payments.");
 
       startSearching(async () => {
         await loadVerifiedPayments(email);
       });
-    });
-  }
-
-  async function useDemoBypass() {
-    setStatus(null);
-    setLatestInvoiceUrl(null);
-    setOtpSent(true);
-    setVerifiedEmail(email);
-    setStatus(`Local demo mode enabled for ${email}. Loading sample payments.`);
-    startSearching(async () => {
-      await loadVerifiedPayments(email, { demoBypass: true });
     });
   }
 
@@ -214,15 +200,9 @@ export function PortalClient() {
             </form>
           ) : null}
 
-          {canUseDemoBypass ? (
+          {isDemoEmail && debugCode ? (
             <div className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-800">
-              Local demo mode detected for {email}. This bypass is available only outside production and
-              only for seeded demo emails.
-              <div className="mt-3">
-                <Button onClick={() => void useDemoBypass()} size="sm" type="button" variant="outline">
-                  Use local demo OTP bypass
-                </Button>
-              </div>
+              Local demo mode detected. Use verification code <span className="font-semibold">{debugCode}</span>.
             </div>
           ) : null}
 
