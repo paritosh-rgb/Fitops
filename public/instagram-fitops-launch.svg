@@ -1,0 +1,61 @@
+<svg width="1080" height="1080" viewBox="0 0 1080 1080" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="70" y1="60" x2="1010" y2="1020" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#071A3A"/>
+      <stop offset="0.45" stop-color="#123E88"/>
+      <stop offset="1" stop-color="#0AAE7A"/>
+    </linearGradient>
+    <linearGradient id="card" x1="115" y1="130" x2="965" y2="950" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#FFFFFF" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.06"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="170" y1="840" x2="910" y2="840" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#22D37B"/>
+      <stop offset="1" stop-color="#46F3A8"/>
+    </linearGradient>
+    <filter id="blur" x="0" y="0" width="1080" height="1080" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="36"/>
+    </filter>
+  </defs>
+
+  <rect width="1080" height="1080" rx="42" fill="url(#bg)"/>
+
+  <g opacity="0.45" filter="url(#blur)">
+    <circle cx="210" cy="230" r="140" fill="#2A72FF"/>
+    <circle cx="870" cy="830" r="170" fill="#18D6A4"/>
+  </g>
+
+  <rect x="95" y="110" width="890" height="860" rx="34" fill="url(#card)"/>
+  <rect x="95" y="110" width="890" height="860" rx="34" stroke="rgba(255,255,255,0.24)"/>
+
+  <text x="145" y="190" fill="#CFE3FF" font-size="36" font-family="Arial, sans-serif" font-weight="700" letter-spacing="2">NOW LIVE</text>
+  <text x="145" y="300" fill="#FFFFFF" font-size="104" font-family="Arial, sans-serif" font-weight="800">FitOps</text>
+  <text x="145" y="356" fill="#DCE9FF" font-size="36" font-family="Arial, sans-serif" font-weight="600">Gym Revenue Growth System</text>
+
+  <rect x="145" y="405" width="790" height="140" rx="24" fill="rgba(255,255,255,0.11)"/>
+  <text x="175" y="468" fill="#EAF2FF" font-size="35" font-family="Arial, sans-serif" font-weight="700">Built for Indian gyms to increase:</text>
+  <text x="175" y="516" fill="#FFFFFF" font-size="35" font-family="Arial, sans-serif" font-weight="700">Renewals • Dues Recovery • Member Retention</text>
+
+  <g>
+    <rect x="145" y="580" width="240" height="150" rx="18" fill="rgba(255,255,255,0.1)"/>
+    <text x="170" y="632" fill="#D8E8FF" font-size="24" font-family="Arial, sans-serif" font-weight="600">Renewal Lift</text>
+    <text x="170" y="695" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="800">+15-30%</text>
+  </g>
+
+  <g>
+    <rect x="420" y="580" width="240" height="150" rx="18" fill="rgba(255,255,255,0.1)"/>
+    <text x="445" y="632" fill="#D8E8FF" font-size="24" font-family="Arial, sans-serif" font-weight="600">Check-in</text>
+    <text x="445" y="695" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="800">Single QR</text>
+  </g>
+
+  <g>
+    <rect x="695" y="580" width="240" height="150" rx="18" fill="rgba(255,255,255,0.1)"/>
+    <text x="720" y="632" fill="#D8E8FF" font-size="24" font-family="Arial, sans-serif" font-weight="600">Member App</text>
+    <text x="720" y="695" fill="#FFFFFF" font-size="52" font-family="Arial, sans-serif" font-weight="800">Live</text>
+  </g>
+
+  <rect x="145" y="780" width="790" height="120" rx="22" fill="url(#accent)"/>
+  <text x="180" y="850" fill="#083321" font-size="40" font-family="Arial, sans-serif" font-weight="800">Book a Demo on WhatsApp: fitops.vercel.app</text>
+
+  <text x="145" y="955" fill="#BFD4FF" font-size="24" font-family="Arial, sans-serif" font-weight="600">#GymSaaS #FitOps #GymBusiness #IndiaStartup</text>
+</svg>
